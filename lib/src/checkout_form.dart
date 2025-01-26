@@ -12,7 +12,7 @@ class DynamicCheckoutForm extends StatefulWidget {
   const DynamicCheckoutForm({
     Key? key,
     this.buttonText = 'Apply Voucher',
-    this.buttonColor = const Color(0xFF6366F1), // Indigo color
+    this.buttonColor = Colors.deepPurple,
     required this.onVoucherSubmit,
     required this.onButtonPressed,
     this.buttonTextStyle,
@@ -70,7 +70,6 @@ class _DynamicCheckoutFormState extends State<DynamicCheckoutForm>
         _isLoading = false;
       });
 
-      // Reset success state after animation
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           setState(() {
@@ -89,38 +88,43 @@ class _DynamicCheckoutFormState extends State<DynamicCheckoutForm>
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Got a Voucher?',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+          Row(
+            children: [
+              Icon(Icons.local_offer, color: widget.buttonColor, size: 28),
+              const SizedBox(width: 8),
+              Text(
+                'Redeem Your Voucher',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
-            'Enter your code below to redeem your discount',
+            'Enter your voucher code',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.black54,
                 ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: TextField(
@@ -133,13 +137,6 @@ class _DynamicCheckoutFormState extends State<DynamicCheckoutForm>
                         filled: true,
                         fillColor: Colors.grey[50],
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: Colors.grey[300]!,
-                            width: 1,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(
                             color: Colors.grey[300]!,
@@ -178,47 +175,43 @@ class _DynamicCheckoutFormState extends State<DynamicCheckoutForm>
               const SizedBox(width: 12),
               ScaleTransition(
                 scale: _scaleAnimation,
-                child: SizedBox(
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleSubmit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: widget.buttonColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 0,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _handleSubmit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: widget.buttonColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 14,
                     ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                            ),
-                          )
-                        : _isSuccess
-                            ? const Icon(
-                                Icons.check_circle_outline,
-                                size: 24,
-                              )
-                            : Text(
-                                widget.buttonText,
-                                style: widget.buttonTextStyle ??
-                                    const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                              ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                      : _isSuccess
+                          ? const Icon(
+                              Icons.check_circle_outline,
+                              size: 24,
+                            )
+                          : Text(
+                              widget.buttonText,
+                              style: widget.buttonTextStyle ??
+                                  const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
                 ),
               ),
             ],
