@@ -46,9 +46,10 @@ Future<SuccessResponse> redeemVoucher(
   }
 ```
 
-![alt text](https://res.cloudinary.com/dm9s6bfd1/image/upload/v1737881566/longswipe/withOutLockPin_dbcxej.png){ width=320px }
-
-![alt text](https://res.cloudinary.com/dm9s6bfd1/image/upload/v1737881566/longswipe/withlockPin_hvsknm.png){ width=320px }
+<div style={{marginBottom:'10px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/w_400/v1737881566/longswipe/withOutLockPin_dbcxej.png" alt="Without Lock Pin" style={{ maxWidth: '45%' }} />
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/w_400/v1737881566/longswipe/withlockPin_hvsknm.png" alt="With Lock Pin" style={{ maxWidth: '45%' }} />
+</div>
 
 `Redeem using the UI form`: Enables you to utilise the UI
 
