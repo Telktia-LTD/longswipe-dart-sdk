@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import './models/voucher_redemption_charges_response.dart';
 
 class PayWithLongswipe extends StatefulWidget {
+  final String baseUrl;
+  final String apiKey;
   final String buttonText;
   final Color buttonColor;
   final Function(String) onLongswipeSubmit;
@@ -13,6 +16,8 @@ class PayWithLongswipe extends StatefulWidget {
     this.buttonColor = Colors.deepPurple,
     required this.onLongswipeSubmit,
     this.showLockpin = false,
+    required this.baseUrl,
+    required this.apiKey,
   }) : super(key: key);
 
   @override
@@ -61,6 +66,134 @@ class _PayWithLongswipeState extends State<PayWithLongswipe> {
         _errorText = 'Invalid Longswipe code';
       });
     }
+  }
+
+  void _showConfirmationModal(Charges charges) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text('Confirm Transaction'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Amount Requested:'),
+                  Text('${charges.amount}'), // Amount requested
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Amount in Wei:'),
+                  Text('${charges.amountInWei}'), // Amount in Wei
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Balance After Charges:'),
+                  Text(
+                      '${charges.balanceAfterCharges}'), // Balance after charges
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Balance After Charges (Wei):'),
+                  Text('${charges.balanceAfterChargesInWei}'), // Balance in Wei
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Gas Limit (Wei):'),
+                  Text('${charges.gasLimitInWei}'), // Gas limit in Wei
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Gas Price (Wei):'),
+                  Text('${charges.gasPriceInWei}'), // Gas price in Wei
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Processing Fee:'),
+                  Text('${charges.processingFee}'), // Processing fee
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Processing Fee (Wei):'),
+                  Text(
+                      '${charges.processingFeeInWei}'), // Processing fee in Wei
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Total Gas Cost:'),
+                  Text('${charges.totalGasCost}'), // Total gas cost
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Total Gas & Processing Fee:'),
+                  Text('${charges.totalGasCostAndProcessingFee}'), // Total fee
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Total Gas & Fee (Wei):'),
+                  Text(
+                      '${charges.totalGasCostAndProcessingFeeInWei}'), // Total in Wei
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _submitCode(); // Call your submit method here
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: widget.buttonColor,
+              ),
+              child:
+                  const Text('Confirm', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _pasteCode() async {
@@ -214,7 +347,25 @@ class _PayWithLongswipeState extends State<PayWithLongswipe> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _isLoading ? null : _submitCode,
+              onPressed: () {
+                _isLoading
+                    ? null
+                    : _showConfirmationModal(
+                        Charges(
+                            amount: 400,
+                            amountInWei: 400,
+                            balanceAfterCharges: 400,
+                            balanceAfterChargesInWei: 400,
+                            gasLimitInWei: 400,
+                            gasPriceInWei: 400,
+                            processingFee: 400,
+                            processingFeeInWei: 400,
+                            totalGasCost: 4000,
+                            totalGasCostAndProcessingFee: 5000,
+                            totalGasCostAndProcessingFeeInWei: 5000,
+                            totalGasCostInWei: 700),
+                      );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: widget.buttonColor,
                 foregroundColor: Colors.white,

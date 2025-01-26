@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:longswipe/longswipe.dart';
 
@@ -87,6 +85,8 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const SizedBox(height: 20),
             PayWithLongswipe(
+              baseUrl: fetchBaseUrl(),
+              apiKey: fetchApiKey(),
               buttonColor: Colors.deepPurple,
               showLockpin:
                   false, // Show the lockpin field for the user if the voucher requires it
@@ -100,6 +100,14 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+
+  String fetchBaseUrl() {
+    return Constants.productionBaseUrl;
+  }
+
+  String fetchApiKey() {
+    return "YOUR PUBLIC API KEY";
   }
 
   Future<SuccessResponse> redeemVoucher(
@@ -131,12 +139,65 @@ class _MyHomePageState extends State<MyHomePage> {
       var apiKey = "YOUR PUBLIC API KEY";
       // Using the public API key
       var client = LongSwipeClient(baseUrl: baseUrl, apiKey: apiKey);
-      var response = await client.verifyVoucher(code);
+      var response = await client.verifyVoucher(voucherCode: code);
       print(response);
       return response;
     } catch (error) {
       print(error);
       throw Exception('Failed to verify voucher');
+    }
+  }
+
+  Future<VoucherRedemptionCharges> fetchRedemptionCharges(
+    String voucherCode,
+    double amount,
+  ) {
+    try {
+      // Using the production base Url
+      var baseUrl = Constants.productionBaseUrl;
+      var apiKey = "YOUR PUBLIC API KEY";
+      var client = LongSwipeClient(baseUrl: baseUrl, apiKey: apiKey);
+
+      // // You can pass query parameters to the endpoint
+      // var queryParameters = {
+      //   'page': 2,
+      //   'limit': 10,
+      //   'search': 'email|name', // Optional search query
+      // };
+
+      var response = client.getRedemptionCharges(
+        voucher: voucherCode,
+        amount: amount,
+      );
+
+      return response;
+    } catch (e) {
+      throw Exception('Failed to fetch redemption charges');
+    }
+  }
+
+  Future<Invoices> fetchInvoices(
+    String voucherCode,
+    double amount,
+  ) {
+    try {
+      // Using the production base Url
+      var baseUrl = Constants.productionBaseUrl;
+      var apiKey = "YOUR PUBLIC API KEY";
+      var client = LongSwipeClient(baseUrl: baseUrl, apiKey: apiKey);
+
+      // You can pass query parameters to the endpoint
+      var queryParameters = {
+        'page': 2,
+        'limit': 10,
+        'search': 'email|name', // Optional search query
+      };
+
+      var response = client.fetchInvoices(queryParameters: queryParameters);
+
+      return response;
+    } catch (e) {
+      throw Exception('Failed to fetch redemption charges');
     }
   }
 }

@@ -8,7 +8,6 @@ class DynamicCheckoutForm extends StatefulWidget {
   final Function() onButtonPressed;
   final TextStyle? buttonTextStyle;
   final InputDecoration? inputDecoration;
-  final bool showLockpin;
 
   const DynamicCheckoutForm({
     Key? key,
@@ -18,7 +17,6 @@ class DynamicCheckoutForm extends StatefulWidget {
     required this.onButtonPressed,
     this.buttonTextStyle,
     this.inputDecoration,
-    this.showLockpin = false,
   }) : super(key: key);
 
   @override
