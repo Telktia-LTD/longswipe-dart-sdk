@@ -46,9 +46,9 @@ Future<SuccessResponse> redeemVoucher(
   }
 ```
 
-![alt text](https://res.cloudinary.com/dm9s6bfd1/image/upload/v1737881566/longswipe/withOutLockPin_dbcxej.png =320px)
+![alt text](https://res.cloudinary.com/dm9s6bfd1/image/upload/v1737881566/longswipe/withOutLockPin_dbcxej.png =320x)
 
-![alt text](https://res.cloudinary.com/dm9s6bfd1/image/upload/v1737881566/longswipe/withlockPin_hvsknm.png =320px)
+![alt text](https://res.cloudinary.com/dm9s6bfd1/image/upload/v1737881566/longswipe/withlockPin_hvsknm.png =320x)
 
 `Redeem using the UI form`: Enables you to utilise the UI
 
