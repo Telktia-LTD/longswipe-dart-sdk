@@ -5,12 +5,14 @@ class PayWithLongswipe extends StatefulWidget {
   final String buttonText;
   final Color buttonColor;
   final Function(String) onLongswipeSubmit;
+  final bool showLockpin;
 
   const PayWithLongswipe({
     Key? key,
     this.buttonText = 'Pay with Longswipe',
     this.buttonColor = Colors.deepPurple,
     required this.onLongswipeSubmit,
+    this.showLockpin = false,
   }) : super(key: key);
 
   @override
@@ -57,6 +59,16 @@ class _PayWithLongswipeState extends State<PayWithLongswipe> {
       setState(() {
         _isLoading = false;
         _errorText = 'Invalid Longswipe code';
+      });
+    }
+  }
+
+  void _pasteCode() async {
+    final clipboardData = await Clipboard.getData('text/plain');
+    if (clipboardData != null) {
+      _codeController.text = clipboardData.text!.toUpperCase();
+      setState(() {
+        _errorText = null; // Clear any previous error when pasting a new code
       });
     }
   }
@@ -126,6 +138,10 @@ class _PayWithLongswipeState extends State<PayWithLongswipe> {
                 horizontal: 16,
                 vertical: 16,
               ),
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.paste, color: Colors.grey),
+                onPressed: _pasteCode,
+              ),
             ),
             style: const TextStyle(
               fontSize: 16,
@@ -143,6 +159,57 @@ class _PayWithLongswipeState extends State<PayWithLongswipe> {
               }
             },
           ),
+          widget.showLockpin ? const SizedBox(height: 20) : const SizedBox(),
+          widget.showLockpin
+              ? TextField(
+                  controller: _codeController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter lock pin',
+                    hintStyle: TextStyle(color: Colors.grey[400]),
+                    errorText: _errorText,
+                    filled: true,
+                    fillColor: Colors.grey[50],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.grey[300]!,
+                        width: 1,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: widget.buttonColor,
+                        width: 2,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
+                    suffixIcon: IconButton(
+                      icon:
+                          const Icon(Icons.remove_red_eye, color: Colors.grey),
+                      onPressed: () {},
+                    ),
+                  ),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textCapitalization: TextCapitalization.characters,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9]')),
+                  ],
+                  onChanged: (_) {
+                    if (_errorText != null) {
+                      setState(() {
+                        _errorText = null;
+                      });
+                    }
+                  },
+                )
+              : const SizedBox(),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,

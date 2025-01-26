@@ -126,11 +126,10 @@ packages:
   longswipe:
     dependency: "direct main"
     description:
-      name: longswipe
-      sha256: e26ce57c693769259154aa86df779a87299595bc7976146b6a882e1296b82a0c
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.1"
+      path: ".."
+      relative: true
+    source: path
+    version: "0.0.3"
   matcher:
     dependency: transitive
     description:

@@ -8,6 +8,7 @@ class DynamicCheckoutForm extends StatefulWidget {
   final Function() onButtonPressed;
   final TextStyle? buttonTextStyle;
   final InputDecoration? inputDecoration;
+  final bool showLockpin;
 
   const DynamicCheckoutForm({
     Key? key,
@@ -17,6 +18,7 @@ class DynamicCheckoutForm extends StatefulWidget {
     required this.onButtonPressed,
     this.buttonTextStyle,
     this.inputDecoration,
+    this.showLockpin = false,
   }) : super(key: key);
 
   @override
@@ -50,7 +52,7 @@ class _DynamicCheckoutFormState extends State<DynamicCheckoutForm>
   void _handleSubmit() async {
     if (_voucherController.text.isEmpty) {
       setState(() {
-        _errorText = 'Please enter a voucher code';
+        _errorText = 'Please Longswipe code';
       });
       return;
     }
@@ -103,27 +105,6 @@ class _DynamicCheckoutFormState extends State<DynamicCheckoutForm>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(Icons.local_offer, color: widget.buttonColor, size: 28),
-              const SizedBox(width: 8),
-              Text(
-                'Redeem Your Voucher',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Enter your voucher code',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.black54,
-                ),
-          ),
-          const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
@@ -204,13 +185,9 @@ class _DynamicCheckoutFormState extends State<DynamicCheckoutForm>
                               Icons.check_circle_outline,
                               size: 24,
                             )
-                          : Text(
-                              widget.buttonText,
-                              style: widget.buttonTextStyle ??
-                                  const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                          : const Icon(
+                              Icons.check_circle_outline,
+                              size: 24,
                             ),
                 ),
               ),

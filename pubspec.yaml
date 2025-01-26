@@ -1,6 +1,6 @@
 name: longswipe
 description: 'Longswipe is a Flutter package that provides a simple way to implement longswipe in your Flutter app.'
-version: 0.0.2
+version: 0.0.3
 homepage: https://longswipe.com
 repository: https://github.com/Telktia-LTD/longswipe-dart-sdk
 

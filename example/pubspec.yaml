@@ -11,7 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  longswipe: ^0.0.1
+  longswipe:
+    path: ../
 
 dev_dependencies:
   flutter_test:
