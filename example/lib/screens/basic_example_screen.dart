@@ -9,13 +9,12 @@ class BasicExample extends StatefulWidget {
 class _BasicExampleState extends State<BasicExample> {
   final client = LongswipeClient(
     apiKey: 'your-public-api-key',
-    isSandbox: false,
+    isSandbox: true,
   );
 
   final _voucherCodeController = TextEditingController();
   final _pinController = TextEditingController();
   final _amountController = TextEditingController();
-  String receivingCurrencyId = 'currency-id';
   String walletAddress = 'your-wallet-id';
   bool _isLoading = false;
 
@@ -34,7 +33,7 @@ class _BasicExampleState extends State<BasicExample> {
         voucherCode: _voucherCodeController.text,
         lockPin: _pinController.text,
         amount: int.parse(_amountController.text),
-        receivingCurrencyId: receivingCurrencyId,
+        toCurrencyAbbreviation: CurrencyType.USDC.value,
         walletAddress: walletAddress,
       );
 
@@ -68,7 +67,7 @@ class _BasicExampleState extends State<BasicExample> {
         voucherCode: _voucherCodeController.text,
         lockPin: _pinController.text,
         amount: int.parse(_amountController.text),
-        receivingCurrencyId: receivingCurrencyId,
+        toCurrencyAbbreviation: CurrencyType.USDC.value,
         walletAddress: walletAddress,
       );
 

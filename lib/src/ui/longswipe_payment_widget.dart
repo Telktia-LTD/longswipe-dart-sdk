@@ -16,8 +16,9 @@ class LongswipePaymentWidget extends StatefulWidget {
   final Widget Function(BuildContext, TextEditingController)? voucherPinBuilder;
   final Widget Function(BuildContext, TextEditingController)? amountBuilder;
   final Widget Function(BuildContext, VoidCallback)? submitButtonBuilder;
+  final VoucherDetailsConfig voucherDetailsConfig;
   final bool useBottomSheet;
-  final String receivingCurrencyId;
+  final String toCurrencyAbbreviation;
   final String walletAddress;
 
   const LongswipePaymentWidget({
@@ -27,8 +28,9 @@ class LongswipePaymentWidget extends StatefulWidget {
     required this.onSuccess,
     required this.onSuccessFetchVoucherDetails,
     required this.onError,
-    required this.receivingCurrencyId,
+    required this.toCurrencyAbbreviation,
     required this.walletAddress,
+    required this.voucherDetailsConfig,
     this.loadingWidget,
     this.voucherCodeBuilder,
     this.voucherPinBuilder,
@@ -62,7 +64,7 @@ class _LongswipePaymentWidgetState extends State<LongswipePaymentWidget> {
         voucherCode: _voucherCodeController.text,
         lockPin: _lockPinController.text,
         amount: amount,
-        receivingCurrencyId: widget.receivingCurrencyId,
+        toCurrencyAbbreviation: widget.toCurrencyAbbreviation,
         walletAddress: widget.walletAddress,
       );
 
@@ -88,20 +90,22 @@ class _LongswipePaymentWidgetState extends State<LongswipePaymentWidget> {
             _processPayment();
           },
           onCancel: () => Navigator.pop(context),
+          config: widget.voucherDetailsConfig,
         ),
       );
     } else {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Voucher Details'),
+          contentPadding: EdgeInsets.zero,
           content: VoucherDetailsBottomSheet(
             details: _voucherDetails!,
             onProceed: () {
-              _processPayment();
               Navigator.pop(context);
+              _processPayment();
             },
             onCancel: () => Navigator.pop(context),
+            config: widget.voucherDetailsConfig,
           ),
         ),
       );
@@ -122,7 +126,7 @@ class _LongswipePaymentWidgetState extends State<LongswipePaymentWidget> {
         voucherCode: _voucherCodeController.text,
         lockPin: _lockPinController.text,
         amount: amount,
-        receivingCurrencyId: widget.receivingCurrencyId,
+        toCurrencyAbbreviation: widget.toCurrencyAbbreviation,
         walletAddress: widget.walletAddress,
       );
 
@@ -205,16 +209,16 @@ class _LongswipePaymentWidgetState extends State<LongswipePaymentWidget> {
               label: 'Voucher Code',
               controller: _voucherCodeController,
             ),
-        widget.voucherPinBuilder?.call(context, _lockPinController) ??
-            _buildDefaultInput(
-              label: 'Lock PIN (Optional)',
-              controller: _lockPinController,
-            ),
         widget.amountBuilder?.call(context, _amountController) ??
             _buildDefaultInput(
               label: 'Amount',
               controller: _amountController,
               isNumber: true,
+            ),
+        widget.voucherPinBuilder?.call(context, _lockPinController) ??
+            _buildDefaultInput(
+              label: 'Lock PIN (Optional)',
+              controller: _lockPinController,
             ),
         const SizedBox(height: 16),
         widget.submitButtonBuilder?.call(context, _fetchVoucherDetails) ??

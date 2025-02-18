@@ -26,7 +26,7 @@ class LongswipeClient {
   Future<VoucherDetailsResponse> fetchVoucherDetails({
     required String voucherCode,
     required int amount,
-    required String receivingCurrencyId,
+    required String toCurrencyAbbreviation,
     String lockPin = "",
     String walletAddress = "",
   }) async {
@@ -35,7 +35,7 @@ class LongswipeClient {
       log('Body... ${jsonEncode({
             "amount": amount,
             "lockPin": lockPin,
-            "receivingCurrencyId": receivingCurrencyId,
+            "toCurrencyAbbreviation": toCurrencyAbbreviation,
             "voucherCode": voucherCode,
             "walletAddress": walletAddress
           })}');
@@ -47,11 +47,14 @@ class LongswipeClient {
         body: jsonEncode({
           "amount": amount,
           "lockPin": lockPin,
-          "receivingCurrencyId": receivingCurrencyId,
+          "toCurrencyAbbreviation": toCurrencyAbbreviation,
           "voucherCode": voucherCode,
           "walletAddress": walletAddress
         }),
       );
+
+      log('Response... ${response.body}');
+      log('ResponseCODE... ${response.statusCode}');
 
       if (response.statusCode != 200) {
         throw LongswipeException(
@@ -71,7 +74,7 @@ class LongswipeClient {
   Future<RedeemVoucherResponse> processVoucherPayment({
     required String voucherCode,
     required int amount,
-    required String receivingCurrencyId,
+    required String toCurrencyAbbreviation,
     String lockPin = "",
     String walletAddress = "",
   }) async {
@@ -82,7 +85,7 @@ class LongswipeClient {
         body: jsonEncode({
           "amount": amount,
           "lockPin": lockPin,
-          "receivingCurrencyId": receivingCurrencyId,
+          "toCurrencyAbbreviation": toCurrencyAbbreviation,
           "voucherCode": voucherCode,
           "walletAddress": walletAddress
         }),

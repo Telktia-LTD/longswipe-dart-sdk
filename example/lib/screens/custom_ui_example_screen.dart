@@ -10,7 +10,6 @@ import '../shared_widgets/custom_loading_indicator.dart';
 class CustomUIExample extends StatelessWidget {
   const CustomUIExample({super.key});
 
-  static const receivingCurrencyId = 'currency-id';
   static const walletAddress = 'your-wallet-address';
 
   @override
@@ -21,12 +20,22 @@ class CustomUIExample extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: LongswipePaymentWidget(
           client: LongswipeClient(
-            apiKey: 'your-public-api-key',
-            isSandbox: false,
+            apiKey: 'public-key',
+            isSandbox: true,
           ),
-          receivingCurrencyId: receivingCurrencyId,
+          toCurrencyAbbreviation: CurrencyType.USDC.value,
           walletAddress: walletAddress,
           useBottomSheet: true,
+          voucherDetailsConfig: const VoucherDetailsConfig(
+            showAmount: true,
+            showBalance: true,
+            showProcessingFee: false,
+            showTotalAmount: true,
+            showExchangeRate: true,
+            showFromCurrency: true,
+            showToCurrency: true,
+            showPercentageCharge: false,
+          ),
           voucherCodeBuilder: (context, controller) {
             return CustomInput(
               controller: controller,
