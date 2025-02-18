@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:longswipe_payment/longswipe_payment.dart';
 
-import 'longswipe_theme.dart';
-import 'voucher_details_bottomsheet.dart';
-
 class LongswipePaymentWidget extends StatefulWidget {
   final LongswipeClient client;
   final LongswipeTheme theme;

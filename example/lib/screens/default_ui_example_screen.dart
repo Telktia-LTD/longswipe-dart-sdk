@@ -16,7 +16,7 @@ class DefaultUIExample extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: LongswipePaymentWidget(
           client: LongswipeClient(
-            apiKey: 'pk_test_up6n93crC-JqzYRirGyFMHX4yMJr2V5tnjvcRyVrGAI=',
+            apiKey: 'your-public-api-key',
             isSandbox: false,
           ),
           useBottomSheet: true,

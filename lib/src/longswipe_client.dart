@@ -31,15 +31,6 @@ class LongswipeClient {
     String walletAddress = "",
   }) async {
     try {
-      log('URL... $baseUrl/merchant-integrations/fetch-voucher-redemption-charges');
-      log('Body... ${jsonEncode({
-            "amount": amount,
-            "lockPin": lockPin,
-            "toCurrencyAbbreviation": toCurrencyAbbreviation,
-            "voucherCode": voucherCode,
-            "walletAddress": walletAddress
-          })}');
-
       final response = await http.post(
         Uri.parse(
             '$baseUrl/merchant-integrations/fetch-voucher-redemption-charges'),
@@ -52,9 +43,6 @@ class LongswipeClient {
           "walletAddress": walletAddress
         }),
       );
-
-      log('Response... ${response.body}');
-      log('ResponseCODE... ${response.statusCode}');
 
       if (response.statusCode != 200) {
         throw LongswipeException(
@@ -90,9 +78,6 @@ class LongswipeClient {
           "walletAddress": walletAddress
         }),
       );
-
-      log('Response... ${response.body}');
-      log('ResponseCODE... ${response.statusCode}');
 
       if (response.statusCode != 200) {
         throw LongswipeException(
