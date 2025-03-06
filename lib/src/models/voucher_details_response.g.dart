@@ -12,7 +12,7 @@ VoucherDetailsResponse _$VoucherDetailsResponseFromJson(
       code: (json['code'] as num).toInt(),
       data: json['data'] == null
           ? null
-          : VoucherDetailsData.fromJson(json['data'] as Map<String, dynamic>),
+          : VoucherDetail.fromJson(json['data'] as Map<String, dynamic>),
       message: json['message'] as String,
       status: json['status'] as String,
     );
@@ -26,99 +26,34 @@ Map<String, dynamic> _$VoucherDetailsResponseToJson(
       'status': instance.status,
     };
 
-VoucherDetailsData _$VoucherDetailsDataFromJson(Map<String, dynamic> json) =>
-    VoucherDetailsData(
-      charges: Charges.fromJson(json['charges'] as Map<String, dynamic>),
-      voucher: Voucher.fromJson(json['voucher'] as Map<String, dynamic>),
-    );
-
-Map<String, dynamic> _$VoucherDetailsDataToJson(VoucherDetailsData instance) =>
-    <String, dynamic>{
-      'charges': instance.charges,
-      'voucher': instance.voucher,
-    };
-
-Charges _$ChargesFromJson(Map<String, dynamic> json) => Charges(
-      exchangeRate: (json['exchangeRate'] as num).toInt(),
-      fromCurrency:
-          Currency.fromJson(json['fromCurrency'] as Map<String, dynamic>),
-      isPercentageCharge: json['isPercentageCharge'] as bool,
-      percentageCharge: (json['percentageCharge'] as num).toInt(),
-      processingFee: (json['processingFee'] as num).toInt(),
-      swapAmount: (json['swapAmount'] as num).toInt(),
-      toAmount: (json['toAmount'] as num).toInt(),
-      toCurrency: Currency.fromJson(json['toCurrency'] as Map<String, dynamic>),
-      totalGasAndProceesingFeeInFromCurrency:
-          (json['totalGasAndProceesingFeeInFromCurrency'] as num).toInt(),
-      totalGasCostAndProcessingFeeInWei:
-          (json['totalGasCostAndProcessingFeeInWei'] as num).toInt(),
-    );
-
-Map<String, dynamic> _$ChargesToJson(Charges instance) => <String, dynamic>{
-      'exchangeRate': instance.exchangeRate,
-      'fromCurrency': instance.fromCurrency,
-      'isPercentageCharge': instance.isPercentageCharge,
-      'percentageCharge': instance.percentageCharge,
-      'processingFee': instance.processingFee,
-      'swapAmount': instance.swapAmount,
-      'toAmount': instance.toAmount,
-      'toCurrency': instance.toCurrency,
-      'totalGasAndProceesingFeeInFromCurrency':
-          instance.totalGasAndProceesingFeeInFromCurrency,
-      'totalGasCostAndProcessingFeeInWei':
-          instance.totalGasCostAndProcessingFeeInWei,
-    };
-
-Currency _$CurrencyFromJson(Map<String, dynamic> json) => Currency(
-      abbrev: json['abbrev'] as String,
-      currencyType: json['currencyType'] as String,
+VoucherDetail _$VoucherDetailFromJson(Map<String, dynamic> json) =>
+    VoucherDetail(
+      amount: (json['amount'] as num).toInt(),
+      balance: (json['balance'] as num).toInt(),
+      code: json['code'] as String,
+      createdAt: json['createdAt'] as String,
+      createdForExistingUser: json['createdForExistingUser'] as bool,
+      createdForMerchant: json['createdForMerchant'] as bool,
+      createdForNonExistingUser: json['createdForNonExistingUser'] as bool,
+      cryptoVoucherDetails: CryptoVoucherDetails.fromJson(
+          json['cryptoVoucherDetails'] as Map<String, dynamic>),
+      generatedCurrency: GeneratedCurrency.fromJson(
+          json['generatedCurrency'] as Map<String, dynamic>),
       id: json['id'] as String,
-      image: json['image'] as String,
-      isActive: json['isActive'] as bool,
-      name: json['name'] as String,
-      symbol: json['symbol'] as String,
-    );
-
-Map<String, dynamic> _$CurrencyToJson(Currency instance) => <String, dynamic>{
-      'abbrev': instance.abbrev,
-      'currencyType': instance.currencyType,
-      'id': instance.id,
-      'image': instance.image,
-      'isActive': instance.isActive,
-      'name': instance.name,
-      'symbol': instance.symbol,
-    };
-
-Voucher _$VoucherFromJson(Map<String, dynamic> json) => Voucher(
-      amount: (json['amount'] as num?)?.toInt(),
-      balance: (json['balance'] as num?)?.toInt(),
-      code: json['code'] as String?,
-      createdAt: json['createdAt'] as String?,
-      createdForExistingUser: json['createdForExistingUser'] as bool?,
-      createdForMerchant: json['createdForMerchant'] as bool?,
-      createdForNonExistingUser: json['createdForNonExistingUser'] as bool?,
-      cryptoVoucherDetails: json['cryptoVoucherDetails'] == null
-          ? null
-          : CryptoVoucherDetails.fromJson(
-              json['cryptoVoucherDetails'] as Map<String, dynamic>),
-      generatedCurrency: json['generatedCurrency'] == null
-          ? null
-          : Currency.fromJson(
-              json['generatedCurrency'] as Map<String, dynamic>),
-      id: json['id'] as String?,
-      isLocked: json['isLocked'] as bool?,
-      isUsed: json['isUsed'] as bool?,
-      metaData: json['metaData'] as String?,
-      onchain: json['onchain'] as bool?,
-      onchainProcessing: json['onchainProcessing'] as bool?,
-      redeemedVouchers: (json['redeemedVouchers'] as List<dynamic>?)
-          ?.map((e) => RedeemedVoucher.fromJson(e as Map<String, dynamic>))
+      isLocked: json['isLocked'] as bool,
+      isUsed: json['isUsed'] as bool,
+      metaData: json['metaData'] as String,
+      onchain: json['onchain'] as bool,
+      onchainProcessing: json['onchainProcessing'] as bool,
+      redeemedVouchers: (json['redeemedVouchers'] as List<dynamic>)
+          .map((e) => RedeemedVoucher.fromJson(e as Map<String, dynamic>))
           .toList(),
-      transactionHash: json['transactionHash'] as String?,
-      wasPaidFor: json['wasPaidFor'] as bool?,
+      transactionHash: json['transactionHash'] as String,
+      wasPaidFor: json['wasPaidFor'] as bool,
     );
 
-Map<String, dynamic> _$VoucherToJson(Voucher instance) => <String, dynamic>{
+Map<String, dynamic> _$VoucherDetailToJson(VoucherDetail instance) =>
+    <String, dynamic>{
       'amount': instance.amount,
       'balance': instance.balance,
       'code': instance.code,
@@ -142,12 +77,12 @@ Map<String, dynamic> _$VoucherToJson(Voucher instance) => <String, dynamic>{
 CryptoVoucherDetails _$CryptoVoucherDetailsFromJson(
         Map<String, dynamic> json) =>
     CryptoVoucherDetails(
-      balance: json['balance'] as String?,
-      codeHash: json['codeHash'] as String?,
-      creator: json['creator'] as String?,
-      isRedeemed: json['isRedeemed'] as bool?,
-      transactionHash: json['transactionHash'] as String?,
-      value: json['value'] as String?,
+      balance: json['balance'] as String,
+      codeHash: json['codeHash'] as String,
+      creator: json['creator'] as String,
+      isRedeemed: json['isRedeemed'] as bool,
+      transactionHash: json['transactionHash'] as String,
+      value: json['value'] as String,
     );
 
 Map<String, dynamic> _$CryptoVoucherDetailsToJson(
@@ -161,18 +96,38 @@ Map<String, dynamic> _$CryptoVoucherDetailsToJson(
       'value': instance.value,
     };
 
+GeneratedCurrency _$GeneratedCurrencyFromJson(Map<String, dynamic> json) =>
+    GeneratedCurrency(
+      abbrev: json['abbrev'] as String,
+      currencyType: json['currencyType'] as String,
+      id: json['id'] as String,
+      image: json['image'] as String,
+      isActive: json['isActive'] as bool,
+      name: json['name'] as String,
+      symbol: json['symbol'] as String,
+    );
+
+Map<String, dynamic> _$GeneratedCurrencyToJson(GeneratedCurrency instance) =>
+    <String, dynamic>{
+      'abbrev': instance.abbrev,
+      'currencyType': instance.currencyType,
+      'id': instance.id,
+      'image': instance.image,
+      'isActive': instance.isActive,
+      'name': instance.name,
+      'symbol': instance.symbol,
+    };
+
 RedeemedVoucher _$RedeemedVoucherFromJson(Map<String, dynamic> json) =>
     RedeemedVoucher(
-      amount: (json['amount'] as num?)?.toInt(),
-      createdAt: json['createdAt'] as String?,
-      id: json['id'] as String?,
-      isMerchant: json['isMerchant'] as bool?,
-      redeemedUserId: json['redeemedUserId'] as String?,
-      redeemerWalletAddress: json['redeemerWalletAddress'] as String?,
-      user: json['user'] == null
-          ? null
-          : User.fromJson(json['user'] as Map<String, dynamic>),
-      voucherId: json['voucherId'] as String?,
+      amount: (json['amount'] as num).toInt(),
+      createdAt: json['createdAt'] as String,
+      id: json['id'] as String,
+      isMerchant: json['isMerchant'] as bool,
+      redeemedUserId: json['redeemedUserId'] as String,
+      redeemerWalletAddress: json['redeemerWalletAddress'] as String,
+      user: User.fromJson(json['user'] as Map<String, dynamic>),
+      voucherId: json['voucherId'] as String,
     );
 
 Map<String, dynamic> _$RedeemedVoucherToJson(RedeemedVoucher instance) =>
@@ -188,19 +143,19 @@ Map<String, dynamic> _$RedeemedVoucherToJson(RedeemedVoucher instance) =>
     };
 
 User _$UserFromJson(Map<String, dynamic> json) => User(
-      avatar: json['avatar'] as String?,
-      email: json['email'] as String?,
-      emailVerified: json['emailVerified'] as bool?,
-      externalId: json['externalId'] as String?,
-      id: json['id'] as String?,
-      isActive: json['isActive'] as bool?,
-      isPinSet: json['isPinSet'] as bool?,
-      otherNames: json['otherNames'] as String?,
-      phone: json['phone'] as String?,
-      regChannel: json['regChannel'] as String?,
-      role: json['role'] as String?,
-      surname: json['surname'] as String?,
-      username: json['username'] as String?,
+      avatar: json['avatar'] as String,
+      email: json['email'] as String,
+      emailVerified: json['emailVerified'] as bool,
+      externalId: json['externalId'] as String,
+      id: json['id'] as String,
+      isActive: json['isActive'] as bool,
+      isPinSet: json['isPinSet'] as bool,
+      otherNames: json['otherNames'] as String,
+      phone: json['phone'] as String,
+      regChannel: json['regChannel'] as String,
+      role: json['role'] as String,
+      surname: json['surname'] as String,
+      username: json['username'] as String,
     );
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
