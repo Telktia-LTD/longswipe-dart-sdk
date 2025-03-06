@@ -34,7 +34,7 @@ class _BasicExampleState extends State<BasicExample> {
         voucherCode: _voucherCodeController.text,
         lockPin: _pinController.text,
         amount: int.parse(_amountController.text),
-        receivingCurrencyId: receivingCurrencyId,
+        receivingCurrencyCode: receivingCurrencyId,
         walletAddress: walletAddress,
       );
 
@@ -68,7 +68,7 @@ class _BasicExampleState extends State<BasicExample> {
         voucherCode: _voucherCodeController.text,
         lockPin: _pinController.text,
         amount: int.parse(_amountController.text),
-        receivingCurrencyId: receivingCurrencyId,
+        receivingCurrencyCode: receivingCurrencyId,
         walletAddress: walletAddress,
       );
 
@@ -157,7 +157,7 @@ class _BasicExampleState extends State<BasicExample> {
 }
 
 class VoucherDetailsSheet extends StatelessWidget {
-  final VoucherDetailsResponse details;
+  final VoucherChargesDetailsResponse details;
   final VoidCallback onProceed;
 
   const VoucherDetailsSheet({

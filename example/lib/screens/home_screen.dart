@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-
 import 'basic_example_screen.dart';
-import 'custom_theme_example_screen.dart';
-import 'custom_ui_example_screen.dart';
-import 'default_ui_example_screen.dart';
+import 'pay_with_longswipe_checkout_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -19,6 +16,17 @@ class HomeScreen extends StatelessWidget {
         children: [
           _buildCard(
             context,
+            'Pay With Longswipe Checkout Widget',
+            'Pay with Longswipe Detailed Checkout Flow',
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => PayWithLongswipeCheckoutScreen()),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildCard(
+            context,
             'Basic Usage',
             'Basic implementation with LongswipeClient',
             () => Navigator.push(
@@ -27,35 +35,6 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          _buildCard(
-            context,
-            'Default UI',
-            'Basic implementation with default styling',
-            () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const DefaultUIExample()),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildCard(
-            context,
-            'Custom Theme',
-            'Default UI with custom styling',
-            () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const CustomThemeExample()),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildCard(
-            context,
-            'Custom UI',
-            'Fully customized UI implementation',
-            () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const CustomUIExample()),
-            ),
-          ),
         ],
       ),
     );

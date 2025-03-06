@@ -19,6 +19,17 @@ The longswipe package allows you to receieve vouchers as a form of payment or ch
 
 ## Features
 
+### Supported Currencies
+
+| Enum                    |
+| :---------------------- | :--------- |
+| CurrencyType.USD.value  | US Dollar  |
+| CurrencyType.EUR.value  | Euro       |
+| CurrencyType.NGN.value  | Naira      |
+| CurrencyType.GBP.value  | Pounds     |
+| CurrencyType.USDC.value | USD Coin   |
+| CurrencyType.USDT.value | USD Tether |
+
 Here are some features of the longswipe SDK
 
 ```dart
@@ -37,7 +48,7 @@ final client = LongswipeClient(
 This will enabke you fetch voucher information and charges
 
 ```dart
-Future<void> _verifyVoucher() async {
+Future<void> _verifyAndFetchVoucherDetails() async {
     if (_voucherCodeController.text.isEmpty || _amountController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all fields')),
@@ -127,79 +138,117 @@ Future<void> _processPayment() async {
 `Redeem using the UI form`: Enables you to utilise the default UI
 
 ```dart
-LongswipePaymentWidget(
-    client: LongswipeClient(
-      apiKey: 'your-public-api-key',
-      isSandbox: false,
-    ),
-    useBottomSheet: true,
-    receivingCurrencyId: 'currency-id',
-    walletAddress: 'wallet-address',
-    onSuccess: (result) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Payment successful!')),
-      );
-    },
-    onSuccessFetchVoucherDetails: (result) {
-      log(result.toJson().toString());
-    },
-    onError: (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${error.message}')),
-      );
-    },
-  )
+LongswipeCheckoutWidget(
+  isSandbox: false,
+  publicKey: 'PUBLIC-API-KEY',
+  amount: 1000,
+  currencyCode: 'CURRENCY TO RECEIVE',
+  walletAddress: "CRYPTO-WALLET-ADDRESS (Optional)",
+),
 
 ```
 
 ##### Using custom theme
 
 ```dart
-LongswipePaymentWidget(
-    client: LongswipeClient(
-      apiKey: 'your-public-api-key',
-      isSandbox: false,
-    ),
-    receivingCurrencyId: 'currency-id',
-    walletAddress: 'wallet-address',
-    useBottomSheet: true,
-    theme: LongswipeTheme(
-      paymentButtonStyle: PaymentButtonStyle(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        height: 56,
-        borderRadius: 28,
-        textStyle: GoogleFonts.inter(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
+LongswipeCheckoutWidget(
+  publicKey: 'PUBLIC-API-KEY',
+  isSandbox: false,
+  amount: 20,
+  currencyCode: 'CURRENCY TO RECEIVE',
+  walletAddress: "CRYPTO-WALLET-ADDRESS (Optional)",
+  theme: LongswipeTheme(
+    backgroundColor: Colors.black,
+    inputDecoration: InputDecoration(
+      enabledBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.white),
+        borderRadius: BorderRadius.circular(8),
       ),
-      inputFieldStyle: InputFieldStyle(
-        borderRadius: 12,
-        textStyle: GoogleFonts.inter(),
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: Colors.grey[100],
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.white),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      disabledBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.white),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.red),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.red),
+        borderRadius: BorderRadius.circular(8),
       ),
     ),
-    onSuccessFetchVoucherDetails: (result) {
-      log(result.toJson().toString());
-    },
-    onSuccess: (result) {
-      log(result.toJson().toString());
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Payment successful!')),
-      );
-    },
-    onError: (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${error.message}')),
-      );
-    },
+    lockPinInputDecoration: InputDecoration(
+      contentPadding: const EdgeInsets.all(2),
+      enabledBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.white),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.white),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      disabledBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.white),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.red),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.red),
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
+    iconColor: Colors.white,
+    containerShadow: const [],
+    titleStyle: const TextStyle(
+      color: Colors.white,
+      fontSize: 14,
+      fontWeight: FontWeight.bold,
+    ),
+    buttonTextStyle: const TextStyle(
+      color: Colors.white,
+      fontSize: 12,
+      fontWeight: FontWeight.bold,
+    ),
+    primaryButtonStyle: ElevatedButton.styleFrom(
+      backgroundColor: Colors.purple,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
+    secondaryButtonStyle: OutlinedButton.styleFrom(
+      side: const BorderSide(color: Colors.purple),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
+    contentPadding: const EdgeInsets.all(16),
+    containerMargin: const EdgeInsets.all(16),
+    borderRadius: 8,
+    labelStyle: const TextStyle(
+      color: Colors.white,
+      fontSize: 12,
+      fontWeight: FontWeight.bold,
+    ),
+    cancelButtonTextStyle: const TextStyle(
+      color: Colors.purple,
+      fontSize: 12,
+      fontWeight: FontWeight.bold,
+    ),
+    inputTextStyle: const TextStyle(
+      color: Colors.white,
+    ),
+    dialogContentTextStyle: const TextStyle(
+      color: Colors.white,
+    ),
   ),
+),
 ```
 
 #### Using custom UI
