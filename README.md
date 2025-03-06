@@ -41,6 +41,27 @@ final client = LongswipeClient(
   );
 ```
 
+### Currency Type Enums
+
+| Enum                    | Currency   |
+| :---------------------- | :--------- |
+| CurrencyType.USD.value  | US Dollar  |
+| CurrencyType.EUR.value  | Euro       |
+| CurrencyType.NGN.value  | Naira      |
+| CurrencyType.GBP.value  | Pounds     |
+| CurrencyType.USDC.value | USD Coin   |
+| CurrencyType.USDT.value | USD Tether |
+
+### Properties
+
+| Properties             |                                  |
+| :--------------------- | :------------------------------- |
+| voucherCode            | Voucher code                     |
+| lockPin                | Voucher lock pin (optional)      |
+| amount                 | Amount to redeem                 |
+| toCurrencyAbbreviation | Currency to redeem to            |
+| walletAddress          | Crypto wallet address (optional) |
+
 ## Vouchers
 
 #### Fetch voucher information
@@ -63,7 +84,7 @@ Future<void> _verifyAndFetchVoucherDetails() async {
         voucherCode: _voucherCodeController.text,
         lockPin: _pinController.text,
         amount: int.parse(_amountController.text),
-        receivingCurrencyId: receivingCurrencyId,
+        toCurrencyAbbreviation: CurrencyType.USDC.value,
         walletAddress: walletAddress,
       );
 
@@ -103,7 +124,7 @@ Future<void> _processPayment() async {
         voucherCode: _voucherCodeController.text,
         lockPin: _pinController.text,
         amount: int.parse(_amountController.text),
-        receivingCurrencyId: receivingCurrencyId,
+        toCurrencyAbbreviation: CurrencyType.USDC.value,
         walletAddress: walletAddress,
       );
 

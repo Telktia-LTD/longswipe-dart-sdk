@@ -131,9 +131,6 @@ class LongswipeClient {
         }),
       );
 
-      log('Response... ${response.body}');
-      log('ResponseCODE... ${response.statusCode}');
-
       if (response.statusCode != 200) {
         throw LongswipeException(
           message: jsonDecode(response.body)['message'],
