@@ -7,6 +7,7 @@ A Flutter SDK for integrating the Longswipe Widget into your application. Provid
 ```yaml
 dependencies:
   longswipe_flutter: ^0.1.0
+  permission_handler: ^10.0.0
 ```
 
 ## Integration Options
@@ -120,9 +121,6 @@ class _CustomPaymentScreenState extends State<CustomPaymentScreen> {
         onResponse: _handleResponse,
       ),
     );
-    
-    // Load the script
-    _controller.loadScript();
   }
 
   void _handleResponse(ResType type, dynamic data) {
@@ -150,27 +148,13 @@ class _CustomPaymentScreenState extends State<CustomPaymentScreen> {
               SizedBox(height: 20),
             ],
             ElevatedButton(
-              onPressed: _controller.isLoaded ? _openPaymentModal : null,
+              onPressed: () => _controller.openModal(context),
               child: Text('Open Payment Modal'),
-            ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _controller.loadScript,
-              child: Text('Reload Script'),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Script loaded: ${_controller.isLoaded ? 'Yes' : 'No'}',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ],
         ),
       ),
     );
-  }
-
-  Future<void> _openPaymentModal() async {
-    await _controller.openModal();
   }
 }
 ```
@@ -194,11 +178,12 @@ The `LongswipeController` constructor accepts a `LongswipeControllerOptions` obj
 | Name       | Type                | Description                                           |
 |------------|---------------------|-------------------------------------------------------|
 | openModal  | Future<void>        | Function to open the Longswipe payment modal          |
-| loadScript | Future<void>        | Function to load the Longswipe script                 |
 | isLoaded   | bool                | Whether the Longswipe script has loaded successfully  |
 | isLoading  | bool                | Whether the Longswipe script is currently loading     |
 
 ## Required Permissions
+
+This package requires camera permissions for QR code scanning. You need to add the following to your app:
 
 ### Android
 
@@ -217,6 +202,32 @@ Add the following to your `ios/Runner/Info.plist` file:
 <key>NSCameraUsageDescription</key>
 <string>This app needs camera access to scan QR codes for payment processing</string>
 ```
+
+### Request Permissions in Your App
+
+It's recommended to request camera permissions at app startup:
+
+```dart
+import 'package:permission_handler/permission_handler.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Request camera permission at app startup
+  await Permission.camera.request();
+  
+  runApp(MyApp());
+}
+```
+
+## Implementation Details
+
+This package uses:
+
+- **flutter_inappwebview**: For embedding a WebView with JavaScript integration
+- **permission_handler**: For handling camera permissions
+
+The implementation loads the Longswipe JavaScript widget in a WebView and communicates with it using JavaScript channels. When the user opens the payment modal, a new screen is presented with the WebView that handles the payment process.
 
 ## Development
 

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-
 import '../controllers/longswipe_controller.dart';
 import '../models/longswipe_options.dart';
 import '../models/response_types.dart';
@@ -59,9 +57,6 @@ class LongswipeWidget extends StatefulWidget {
 class _LongswipeWidgetState extends State<LongswipeWidget> {
   /// Controller for the Longswipe widget
   late LongswipeController _controller;
-  
-  /// Whether the widget is currently showing the modal
-  bool _isShowingModal = false;
 
   @override
   void initState() {
@@ -86,75 +81,13 @@ class _LongswipeWidgetState extends State<LongswipeWidget> {
       options: LongswipeControllerOptions(
         apiKey: widget.apiKey,
         referenceId: widget.referenceId,
-        onResponse: _handleResponse,
+        onResponse: widget.onResponse,
         defaultCurrency: widget.defaultCurrency,
         defaultAmount: widget.defaultAmount,
         config: widget.config,
         metaData: widget.metaData,
       ),
     );
-    
-    // Load the script
-    _controller.loadScript();
-  }
-
-  /// Handle responses from the Longswipe widget
-  void _handleResponse(ResType type, dynamic data) {
-    // Forward the response to the widget's onResponse callback
-    widget.onResponse(type, data);
-    
-    // Update state if needed
-    if (type == ResType.close || type == ResType.success || type == ResType.error) {
-      if (_isShowingModal) {
-        setState(() {
-          _isShowingModal = false;
-        });
-        Navigator.of(context).pop();
-      }
-    }
-  }
-
-  /// Open the Longswipe modal
-  Future<void> _openModal() async {
-    if (!_controller.isLoaded) {
-      // Show loading indicator
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Loading Longswipe...'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      
-      // Wait for script to load
-      await _controller.loadScript();
-    }
-    
-    // Show modal
-    setState(() {
-      _isShowingModal = true;
-    });
-    
-    // Show dialog with WebView
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: EdgeInsets.zero,
-        child: SizedBox(
-          width: double.infinity,
-          height: double.infinity,
-          child: WebViewWidget(
-            controller: _controller.webViewController!,
-          ),
-        ),
-      ),
-    );
-    
-    // Update state when dialog is closed
-    setState(() {
-      _isShowingModal = false;
-    });
   }
 
   @override
@@ -162,14 +95,14 @@ class _LongswipeWidgetState extends State<LongswipeWidget> {
     // If child is provided, wrap it with a GestureDetector
     if (widget.child != null) {
       return GestureDetector(
-        onTap: _controller.isLoaded ? _openModal : null,
+        onTap: () => _controller.openModal(context),
         child: widget.child!,
       );
     }
     
     // Otherwise, render the default button
     return ElevatedButton(
-      onPressed: _controller.isLoaded ? _openModal : null,
+      onPressed: () => _controller.openModal(context),
       style: widget.buttonStyle ?? _defaultButtonStyle(),
       child: Text(widget.buttonText ?? 'Pay with Longswipe'),
     );

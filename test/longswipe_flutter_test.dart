@@ -85,4 +85,8 @@ void main() {
       expect(controller.isLoading, false);
     });
   });
+  
+  // Note: We can't test the WebView functionality in widget tests
+  // as it requires a real device or emulator with camera permissions.
+  // For those tests, you would need to write integration tests.
 }

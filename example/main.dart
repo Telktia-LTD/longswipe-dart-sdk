@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:longswipe_flutter/longswipe_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Request camera permission at app startup
+  await Permission.camera.request();
+  
   runApp(const MyApp());
 }
 
@@ -223,9 +229,6 @@ class _ControllerDemoPageState extends State<ControllerDemoPage> {
         onResponse: _handleResponse,
       ),
     );
-    
-    // Load the script
-    _controller.loadScript();
   }
 
   void _handleResponse(ResType type, dynamic data) {
@@ -296,36 +299,18 @@ class _ControllerDemoPageState extends State<ControllerDemoPage> {
               ),
             ),
             const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: _controller.isLoaded ? _openPaymentModal : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                  ),
-                  child: const Text('Open Payment Modal'),
-                ),
-                const SizedBox(width: 16),
-                OutlinedButton(
-                  onPressed: _controller.loadScript,
-                  child: const Text('Reload Script'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
             Center(
-              child: Text(
-                'Script loaded: ${_controller.isLoaded ? 'Yes' : 'No'}',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: _controller.isLoaded ? Colors.green : Colors.grey,
+              child: ElevatedButton(
+                onPressed: () => _controller.openModal(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
+                child: const Text('Open Payment Modal'),
               ),
             ),
             const SizedBox(height: 30),
@@ -360,12 +345,9 @@ final controller = LongswipeController(
   ),
 );
 
-// Load the script
-controller.loadScript();
-
-// Later in your code
+// Open the modal
 ElevatedButton(
-  onPressed: controller.isLoaded ? controller.openModal : null,
+  onPressed: () => controller.openModal(context),
   child: Text('Open Payment'),
 )
 ''',
@@ -379,9 +361,5 @@ ElevatedButton(
         ),
       ),
     );
-  }
-
-  Future<void> _openPaymentModal() async {
-    await _controller.openModal();
   }
 }

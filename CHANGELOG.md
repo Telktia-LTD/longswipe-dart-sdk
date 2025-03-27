@@ -5,8 +5,8 @@
 * Initial release
 * Added LongswipeWidget component
 * Added LongswipeController for custom UI implementations
-* WebView integration with the Longswipe JavaScript widget
-* Camera access for QR code scanning
+* WebView integration with the Longswipe JavaScript widget using flutter_inappwebview
+* Camera access for QR code scanning with permission_handler
 * Support for all Longswipe features:
   * Voucher verification
   * Redemption charges calculation
@@ -14,3 +14,6 @@
   * Customizable UI
   * Error handling
 * Example app demonstrating both widget and controller approaches
+* Improved JavaScript integration with named handlers
+* Better permission handling
+* Progress indicator during loading

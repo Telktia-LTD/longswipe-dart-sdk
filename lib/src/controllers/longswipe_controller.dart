@@ -1,9 +1,7 @@
-import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../constants.dart';
 import '../models/longswipe_options.dart';
 import '../models/response_types.dart';
@@ -13,58 +11,185 @@ class LongswipeController {
   /// Options for the Longswipe widget
   final LongswipeControllerOptions options;
   
-  /// WebViewController for the WebView
-  WebViewController? _webViewController;
-  
   /// Whether the Longswipe script has been loaded
   bool _isLoaded = false;
   
   /// Whether the Longswipe script is currently loading
   bool _isLoading = false;
-  
-  /// Completer for script loading
-  final Completer<void> _loadCompleter = Completer<void>();
 
   /// Constructor
   LongswipeController({
     required this.options,
   });
 
-  /// Initialize the WebViewController
-  void _initWebViewController() {
-    if (_webViewController != null) return;
-    
-    _webViewController = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.transparent)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageFinished: (_) {
-            _injectLongswipeScript();
-          },
-          onPermissionRequest: (request) {
-            if (request.types.contains(PermissionRequestType.camera)) {
-              request.grant(request.types);
-            }
+  /// Open the Longswipe modal
+  Future<void> openModal(BuildContext context) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LongswipeWebView(
+          options: options,
+          onLoaded: () {
+            _isLoaded = true;
+            _isLoading = false;
           },
         ),
-      )
-      ..addJavaScriptChannel(
-        'LongswipeFlutter',
-        onMessageReceived: _handleJavaScriptMessage,
-      )
-      ..loadHtmlString(_getHtmlContent());
+      ),
+    );
   }
 
-  /// Get the HTML content for the WebView
+  /// Whether the Longswipe script has been loaded
+  bool get isLoaded => _isLoaded;
+
+  /// Whether the Longswipe script is currently loading
+  bool get isLoading => _isLoading;
+}
+
+/// WebView screen for the Longswipe widget
+class LongswipeWebView extends StatefulWidget {
+  /// Options for the Longswipe widget
+  final LongswipeControllerOptions options;
+  
+  /// Callback when the script is loaded
+  final VoidCallback onLoaded;
+
+  /// Constructor
+  const LongswipeWebView({
+    Key? key,
+    required this.options,
+    required this.onLoaded,
+  }) : super(key: key);
+
+  @override
+  State<LongswipeWebView> createState() => _LongswipeWebViewState();
+}
+
+class _LongswipeWebViewState extends State<LongswipeWebView> {
+  late InAppWebViewController _webViewController;
+  bool isPermissionGranted = false;
+  double progress = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _requestPermissions();
+  }
+
+  Future<void> _requestPermissions() async {
+    await Permission.camera.request().then((value) {
+      if (value.isPermanentlyDenied) {
+        openAppSettings();
+      }
+    });
+    
+    if (await Permission.camera.request().isGranted) {
+      setState(() {
+        isPermissionGranted = true;
+      });
+    } else {
+      Permission.camera.onDeniedCallback(() {
+        Permission.camera.request();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Longswipe Payment'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            widget.options.onResponse(ResType.close, null);
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      body: isPermissionGranted
+          ? Stack(
+              children: [
+                InAppWebView(
+                  initialSettings: InAppWebViewSettings(
+                    allowsInlineMediaPlayback: true,
+                    cacheEnabled: false,
+                    clearCache: true,
+                  ),
+                  initialData: InAppWebViewInitialData(
+                    baseUrl: WebUri("https://longswipe.com"),
+                    historyUrl: WebUri("https://longswipe.com"),
+                    mimeType: "text/html",
+                    data: _getHtmlContent(),
+                  ),
+                  onWebViewCreated: (controller) {
+                    _webViewController = controller;
+
+                    _webViewController.addJavaScriptHandler(
+                      handlerName: 'onSuccessCallback',
+                      callback: (response) {
+                        widget.options.onResponse(ResType.success, response.first);
+                        Navigator.pop(context);
+                      },
+                    );
+
+                    _webViewController.addJavaScriptHandler(
+                      handlerName: 'onErrorCallback',
+                      callback: (error) {
+                        widget.options.onResponse(ResType.error, error.first);
+                      },
+                    );
+
+                    _webViewController.addJavaScriptHandler(
+                      handlerName: 'onCloseCallback',
+                      callback: (response) {
+                        widget.options.onResponse(ResType.close, null);
+                        Navigator.pop(context);
+                      },
+                    );
+
+                    _webViewController.addJavaScriptHandler(
+                      handlerName: 'onStartCallback',
+                      callback: (response) {
+                        widget.options.onResponse(ResType.start, null);
+                        widget.onLoaded();
+                      },
+                    );
+                  },
+                  androidOnPermissionRequest: (controller, origin, resources) async {
+                    return PermissionRequestResponse(
+                      resources: resources,
+                      action: PermissionRequestResponseAction.GRANT,
+                    );
+                  },
+                  onProgressChanged: (controller, progress) {
+                    setState(() {
+                      this.progress = progress / 100;
+                    });
+                  },
+                  onConsoleMessage: (controller, consoleMessage) {
+                    print("Console: ${consoleMessage.message}");
+                  },
+                ),
+                progress < 1.0
+                    ? LinearProgressIndicator(value: progress)
+                    : const SizedBox(),
+              ],
+            )
+          : const Center(child: CircularProgressIndicator()),
+    );
+  }
+
   String _getHtmlContent() {
+    final optionsMap = widget.options.toMap();
+    final optionsJson = json.encode(optionsMap);
+    
     return '''
       <!DOCTYPE html>
-      <html>
+      <html lang="en">
         <head>
           <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-          <title>Longswipe Widget</title>
+          <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, shrink-to-fit=1"/>
+          <title>Longswipe Payment</title>
           <style>
             body, html {
               margin: 0;
@@ -72,172 +197,60 @@ class LongswipeController {
               width: 100%;
               height: 100%;
               overflow: hidden;
-              background-color: transparent;
+              background-color: #f5f5f5;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            }
+            #container {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 100%;
+              width: 100%;
             }
           </style>
         </head>
         <body>
-          <div id="longswipe-container"></div>
+          <div id="container">
+            <div id="longswipe-container"></div>
+          </div>
+          
+          <script src="${DEFAULT_URI}"></script>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              try {
+                // Create options with callbacks
+                var options = $optionsJson;
+                
+                // Add callbacks
+                options.onSuccess = function(data) {
+                  window.flutter_inappwebview.callHandler('onSuccessCallback', data);
+                };
+                
+                options.onError = function(error) {
+                  window.flutter_inappwebview.callHandler('onErrorCallback', error);
+                };
+                
+                options.onClose = function() {
+                  window.flutter_inappwebview.callHandler('onCloseCallback');
+                };
+                
+                // Create instance
+                window.longswipeInstance = new LongswipeConnect(options);
+                window.longswipeInstance.setup();
+                
+                // Notify Flutter that the script is loaded
+                window.flutter_inappwebview.callHandler('onStartCallback');
+                
+                // Open the modal
+                window.longswipeInstance.open();
+              } catch (e) {
+                console.error('Error initializing Longswipe:', e);
+                window.flutter_inappwebview.callHandler('onErrorCallback', 'Error initializing Longswipe: ' + e.message);
+              }
+            });
+          </script>
         </body>
       </html>
     ''';
   }
-
-  /// Inject the Longswipe script into the WebView
-  Future<void> _injectLongswipeScript() async {
-    if (_isLoaded || _isLoading) return;
-    
-    _isLoading = true;
-    options.onResponse(ResType.loading, null);
-    
-    final String uri = DEFAULT_URI;
-    
-    final String javascript = '''
-      // Load script
-      var script = document.createElement('script');
-      script.src = '$uri';
-      script.async = true;
-      
-      script.onload = function() {
-        window.LongswipeFlutter.postMessage(JSON.stringify({
-          type: 'start'
-        }));
-      };
-      
-      script.onerror = function() {
-        window.LongswipeFlutter.postMessage(JSON.stringify({
-          type: 'error',
-          data: 'Failed to load Longswipe script'
-        }));
-      };
-      
-      document.head.appendChild(script);
-    ''';
-    
-    await _webViewController?.runJavaScript(javascript);
-  }
-
-  /// Handle messages from JavaScript
-  void _handleJavaScriptMessage(JavaScriptMessage message) {
-    try {
-      final Map<String, dynamic> data = jsonDecode(message.message);
-      final String type = data['type'];
-      final dynamic responseData = data['data'];
-      
-      switch (type) {
-        case 'start':
-          _isLoaded = true;
-          _isLoading = false;
-          if (!_loadCompleter.isCompleted) {
-            _loadCompleter.complete();
-          }
-          options.onResponse(ResType.start, null);
-          break;
-        case 'success':
-          options.onResponse(ResType.success, responseData);
-          break;
-        case 'error':
-          _isLoaded = false;
-          _isLoading = false;
-          options.onResponse(ResType.error, responseData);
-          break;
-        case 'close':
-          options.onResponse(ResType.close, null);
-          break;
-        default:
-          options.onResponse(ResType.error, 'Unknown response type: $type');
-      }
-    } catch (e) {
-      options.onResponse(ResType.error, 'Failed to parse message: $e');
-    }
-  }
-
-  /// Open the Longswipe modal
-  Future<void> openModal() async {
-    if (!_isLoaded) {
-      if (!_isLoading) {
-        await loadScript();
-      }
-      await _loadCompleter.future;
-    }
-    
-    final Map<String, dynamic> optionsMap = options.toMap();
-    final String optionsJson = jsonEncode(optionsMap);
-    
-    final String javascript = '''
-      if (window.LongswipeConnect) {
-        try {
-          // Create options with callbacks
-          var options = $optionsJson;
-          
-          // Add callbacks
-          options.onSuccess = function(data) {
-            window.LongswipeFlutter.postMessage(JSON.stringify({
-              type: 'success',
-              data: data
-            }));
-          };
-          
-          options.onError = function(error) {
-            window.LongswipeFlutter.postMessage(JSON.stringify({
-              type: 'error',
-              data: error
-            }));
-          };
-          
-          options.onClose = function() {
-            window.LongswipeFlutter.postMessage(JSON.stringify({
-              type: 'close'
-            }));
-          };
-          
-          // Create instance if it doesn't exist
-          if (!window.longswipeInstance) {
-            window.longswipeInstance = new LongswipeConnect(options);
-            window.longswipeInstance.setup();
-          }
-          
-          // Open the modal
-          window.longswipeInstance.open();
-        } catch (e) {
-          window.LongswipeFlutter.postMessage(JSON.stringify({
-            type: 'error',
-            data: 'Error opening modal: ' + e.message
-          }));
-        }
-      } else {
-        window.LongswipeFlutter.postMessage(JSON.stringify({
-          type: 'error',
-          data: 'LongswipeConnect not available'
-        }));
-      }
-    ''';
-    
-    await _webViewController?.runJavaScript(javascript);
-  }
-
-  /// Load the Longswipe script
-  Future<void> loadScript() async {
-    _initWebViewController();
-    
-    if (_isLoaded) return;
-    if (_isLoading) return await _loadCompleter.future;
-    
-    // Reset completer if needed
-    if (_loadCompleter.isCompleted) {
-      _loadCompleter = Completer<void>();
-    }
-    
-    await _injectLongswipeScript();
-    return _loadCompleter.future;
-  }
-
-  /// Get the WebViewController
-  WebViewController? get webViewController => _webViewController;
-
-  /// Whether the Longswipe script has been loaded
-  bool get isLoaded => _isLoaded;
-
-  /// Whether the Longswipe script is currently loading
-  bool get isLoading => _isLoading;
 }
