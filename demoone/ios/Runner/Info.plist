@@ -45,8 +45,22 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-		<!-- Required for Longswipe Flutter SDK -->
+	<!-- Required for Longswipe Flutter SDK -->
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs camera access to scan QR codes for payment processing</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs microphone access for enhanced payment features</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs photo library access to upload payment verification documents</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs location access for payment verification</string>
+	<!-- Allow loading content from non-HTTPS sources if needed -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

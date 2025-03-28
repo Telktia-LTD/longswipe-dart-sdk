@@ -1,14 +1,71 @@
 import 'package:flutter/material.dart';
 import 'package:longswipe_flutter/longswipe_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'dart:io' show Platform;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Request camera permission at app startup
-  await Permission.camera.request();
+  // Request all required permissions at app startup
+  await _requestPermissions();
   
   runApp(const MyApp());
+}
+
+Future<void> _requestPermissions() async {
+  // List of permissions needed for the app
+  List<Permission> permissions = [
+    Permission.camera,
+  ];
+  
+  // Add platform-specific permissions
+  if (Platform.isIOS) {
+    permissions.addAll([
+      Permission.microphone,
+      Permission.photos,
+      Permission.location,
+    ]);
+  }
+  
+  // Request each permission
+  for (var permission in permissions) {
+    var status = await permission.status;
+    
+    if (!status.isGranted) {
+      status = await permission.request();
+      
+      // If permission is permanently denied, show a dialog
+      if (status.isPermanentlyDenied) {
+        debugPrint('${permission.toString()} is permanently denied. Please enable it in app settings.');
+      }
+    }
+  }
+}
+
+// Check if all required permissions are granted
+Future<Map<Permission, PermissionStatus>> checkPermissions() async {
+  Map<Permission, PermissionStatus> statuses = {};
+  
+  // List of permissions needed for the app
+  List<Permission> permissions = [
+    Permission.camera,
+  ];
+  
+  // Add platform-specific permissions
+  if (Platform.isIOS) {
+    permissions.addAll([
+      Permission.microphone,
+      Permission.photos,
+      Permission.location,
+    ]);
+  }
+  
+  // Check each permission
+  for (var permission in permissions) {
+    statuses[permission] = await permission.status;
+  }
+  
+  return statuses;
 }
 
 class MyApp extends StatelessWidget {
@@ -63,11 +120,33 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   String _responseMessage = '';
+  Map<Permission, PermissionStatus> _permissionStatuses = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPermissions();
+  }
+
+  Future<void> _checkPermissions() async {
+    final statuses = await checkPermissions();
+    setState(() {
+      _permissionStatuses = statuses;
+    });
+  }
 
   void _incrementCounter() {
     setState(() {
       _counter++;
     });
+  }
+
+  // Open app settings
+  Future<void> _openAppSettings() async {
+    await openAppSettings();
+    // After returning from settings, check permissions again
+    await Future.delayed(const Duration(seconds: 1));
+    await _checkPermissions();
   }
 
   // Handle responses from the Longswipe widget

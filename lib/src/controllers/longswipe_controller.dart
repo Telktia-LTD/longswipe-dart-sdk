@@ -105,12 +105,15 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
 
   InAppWebViewSettings options = InAppWebViewSettings(
     allowsInlineMediaPlayback: true,
+    mediaPlaybackRequiresUserGesture: false, // Allow media playback without user gesture
     cacheEnabled: false,
     clearCache: true,
     javaScriptEnabled: true,
     useShouldInterceptAjaxRequest: true,
     useShouldInterceptFetchRequest: true,
     useHybridComposition: true,  // Important for Android
+    // Camera and microphone access
+    javaScriptCanOpenWindowsAutomatically: true,
   );
 
   @override
@@ -131,23 +134,52 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
   }
 
   Future<void> _requestPermissions() async {
-    var status = await Permission.camera.request();
+    // List of permissions needed for the app
+    List<Permission> permissions = [
+      Permission.camera,
+    ];
     
-    if (status.isGranted) {
-      setState(() {
-        isPermissionGranted = true;
-      });
-    } else if (status.isDenied) {
-      // Permission is denied, show a dialog or retry
-      status = await Permission.camera.request();
-      if (status.isGranted) {
-        setState(() {
-          isPermissionGranted = true;
-        });
+    // Add platform-specific permissions
+    if (Platform.isIOS) {
+      permissions.addAll([
+        Permission.microphone,
+        Permission.photos,
+        Permission.location,
+      ]);
+    }
+    
+    // Request each permission
+    bool allGranted = true;
+    for (var permission in permissions) {
+      var status = await permission.status;
+      
+      if (!status.isGranted) {
+        status = await permission.request();
+        
+        if (!status.isGranted) {
+          allGranted = false;
+          debugPrint('${permission.toString()} is not granted. Status: $status');
+          
+          if (status.isPermanentlyDenied) {
+            // Show a dialog to guide the user to app settings
+            debugPrint('${permission.toString()} is permanently denied. Please enable it in app settings.');
+          }
+        }
       }
-    } else if (status.isPermanentlyDenied) {
-      // Permission is permanently denied, open app settings
-      openAppSettings();
+    }
+    
+    setState(() {
+      isPermissionGranted = allGranted;
+    });
+    
+    // If not all permissions are granted, but we still want to proceed
+    // with limited functionality
+    if (!allGranted) {
+      Future.delayed(const Duration(seconds: 2), () {
+        setState(() {
+          isPermissionGranted = true; // Allow the WebView to load anyway
+        });
+      });
     }
   }
 
@@ -223,14 +255,13 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
                       },
                     );
                   },
-                  onPermissionRequest: Platform.isAndroid
-                    ? null
-                    : (controller, origin) async {
-                        return PermissionResponse(
-                          resources: [],
-                          action: PermissionResponseAction.GRANT,
-                        );
-                      },
+                  onPermissionRequest: (controller, request) async {
+                    // Grant all permission requests from the WebView
+                    return PermissionResponse(
+                      resources: request.resources,
+                      action: PermissionResponseAction.GRANT,
+                    );
+                  },
                   onLoadStop: (controller, url) {
                     pullToRefreshController.endRefreshing();
                   },
@@ -253,13 +284,6 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
                     return PermissionRequestResponse(
                       resources: resources,
                       action: PermissionRequestResponseAction.GRANT,
-                    );
-                  },
-                  androidOnGeolocationPermissionsShowPrompt: (controller, origin) async {
-                    return GeolocationPermissionShowPromptResponse(
-                      allow: true,
-                      origin: origin,
-                      retain: true,
                     );
                   },
                   onConsoleMessage: (controller, consoleMessage) {
@@ -289,6 +313,8 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
         <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, shrink-to-fit=1"/>
+          <!-- Add permissions meta tags for iOS -->
+          <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: https://ssl.gstatic.com; style-src * 'self' 'unsafe-inline'; media-src * blob: 'self' 'unsafe-inline'; img-src * 'self' data: content:; connect-src * 'self'; frame-src *;">
           <title>Longswipe Payment</title>
           <style>
             body, html {
@@ -334,15 +360,42 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
                   window.flutter_inappwebview.callHandler('onCloseCallback');
                 };
                 
-                // Create instance
-                window.longswipeInstance = new LongswipeConnect(options);
-                window.longswipeInstance.setup();
-                
-                // Notify Flutter that the script is loaded
-                window.flutter_inappwebview.callHandler('onStartCallback');
-                
-                // Open the modal
-                window.longswipeInstance.open();
+                // Request camera and microphone permissions explicitly
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                  navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                    .then(function(stream) {
+                      console.log('Camera and microphone access granted');
+                      // Stop the stream immediately, we just needed to request permission
+                      stream.getTracks().forEach(track => track.stop());
+                      
+                      // Create instance
+                      window.longswipeInstance = new LongswipeConnect(options);
+                      window.longswipeInstance.setup();
+                      
+                      // Notify Flutter that the script is loaded
+                      window.flutter_inappwebview.callHandler('onStartCallback');
+                      
+                      // Open the modal
+                      window.longswipeInstance.open();
+                    })
+                    .catch(function(error) {
+                      console.error('Error accessing camera or microphone:', error);
+                      window.flutter_inappwebview.callHandler('onErrorCallback', 'Error accessing camera or microphone: ' + error.message);
+                    });
+                } else {
+                  // Fallback for browsers that don't support getUserMedia
+                  console.warn('getUserMedia not supported, proceeding without explicit permission request');
+                  
+                  // Create instance
+                  window.longswipeInstance = new LongswipeConnect(options);
+                  window.longswipeInstance.setup();
+                  
+                  // Notify Flutter that the script is loaded
+                  window.flutter_inappwebview.callHandler('onStartCallback');
+                  
+                  // Open the modal
+                  window.longswipeInstance.open();
+                }
               } catch (e) {
                 console.error('Error initializing Longswipe:', e);
                 window.flutter_inappwebview.callHandler('onErrorCallback', 'Error initializing Longswipe: ' + e.message);
