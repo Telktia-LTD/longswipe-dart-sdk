@@ -112,12 +112,12 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 10),
             Center(
               child: LongswipeWidget(
-                apiKey: 'your_api_key_here', // Replace with your API key
-                referenceId: 'flutter-sdk-demo-default',
+                apiKey: 'pk_live_ViHyq8ZyzPjZb3q0wC-IJeEhYwaoyA8bPUPb84DAUJ0=', // Replace with your API key
+                referenceId: 'tudeldxyet32312dee',
                 onResponse: _handleResponse,
                 defaultCurrency: Currency.NGN,
                 defaultAmount: 100,
-                metaData: {'source': 'flutter-sdk-demo-default'},
+                metaData: const {'userid':'343', 'useremail':'O5N3S@example.com'},
                 buttonText: 'Pay with Longswipe',
               ),
             ),
@@ -133,7 +133,7 @@ class _HomePageState extends State<HomePage> {
                 onResponse: _handleResponse,
                 defaultCurrency: Currency.USDT,
                 defaultAmount: 100,
-                metaData: {'source': 'flutter-sdk-demo-custom'},
+                metaData: const {'source': 'flutter-sdk-demo-custom'},
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,

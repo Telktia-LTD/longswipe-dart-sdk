@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_inappwebview: ^6.0.0
-  permission_handler: ^10.0.0
+  permission_handler: ^11.0.0
   http: ^1.1.0
 
 dev_dependencies:

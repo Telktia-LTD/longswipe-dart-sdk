@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -23,15 +26,26 @@ class LongswipeController {
   });
 
   /// Open the Longswipe modal
-  Future<void> openModal(BuildContext context) async {
+  Future<void> open(BuildContext context, {
+    Function(dynamic result)? onSuccess,
+    Function(dynamic close)? onClose,
+    Function(dynamic error)? onError
+  }) async {
     await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => LongswipeWebView(
           options: options,
-          onLoaded: () {
+          success: (result) {
             _isLoaded = true;
             _isLoading = false;
+            if (onSuccess != null) onSuccess(result);
+          },
+          close: (close) {
+            if (onClose != null) onClose(close);
+          },
+          error: (error) {
+            if (onError != null) onError(error);
           },
         ),
       ),
@@ -43,6 +57,17 @@ class LongswipeController {
 
   /// Whether the Longswipe script is currently loading
   bool get isLoading => _isLoading;
+  
+  /// Alias for open method to maintain backward compatibility
+  @Deprecated('Use open() instead')
+  Future<void> openModal(BuildContext context) async {
+    return open(
+      context,
+      onSuccess: (result) => options.onResponse(ResType.success, result),
+      onClose: (close) => options.onResponse(ResType.close, null),
+      onError: (error) => options.onResponse(ResType.error, error),
+    );
+  }
 }
 
 /// WebView screen for the Longswipe widget
@@ -50,14 +75,18 @@ class LongswipeWebView extends StatefulWidget {
   /// Options for the Longswipe widget
   final LongswipeControllerOptions options;
   
-  /// Callback when the script is loaded
-  final VoidCallback onLoaded;
+  /// Callback functions
+  final Function(dynamic) success;
+  final Function(dynamic) error;
+  final Function(dynamic) close;
 
   /// Constructor
   const LongswipeWebView({
     Key? key,
     required this.options,
-    required this.onLoaded,
+    required this.success,
+    required this.error,
+    required this.close,
   }) : super(key: key);
 
   @override
@@ -65,31 +94,60 @@ class LongswipeWebView extends StatefulWidget {
 }
 
 class _LongswipeWebViewState extends State<LongswipeWebView> {
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers = {
+    Factory(() => EagerGestureRecognizer())
+  };
+  final GlobalKey webViewKey = GlobalKey();
   late InAppWebViewController _webViewController;
   bool isPermissionGranted = false;
   double progress = 0;
+  late PullToRefreshController pullToRefreshController;
+
+  InAppWebViewSettings options = InAppWebViewSettings(
+    allowsInlineMediaPlayback: true,
+    cacheEnabled: false,
+    clearCache: true,
+    javaScriptEnabled: true,
+    useShouldInterceptAjaxRequest: true,
+    useShouldInterceptFetchRequest: true,
+    useHybridComposition: true,  // Important for Android
+  );
 
   @override
   void initState() {
     super.initState();
     _requestPermissions();
+    pullToRefreshController = PullToRefreshController(
+      onRefresh: () async {
+        if (Platform.isAndroid) {
+          _webViewController.reload();
+        } else if (Platform.isIOS) {
+          _webViewController.loadUrl(
+            urlRequest: URLRequest(url: await _webViewController.getUrl()),
+          );
+        }
+      },
+    );
   }
 
   Future<void> _requestPermissions() async {
-    await Permission.camera.request().then((value) {
-      if (value.isPermanentlyDenied) {
-        openAppSettings();
-      }
-    });
+    var status = await Permission.camera.request();
     
-    if (await Permission.camera.request().isGranted) {
+    if (status.isGranted) {
       setState(() {
         isPermissionGranted = true;
       });
-    } else {
-      Permission.camera.onDeniedCallback(() {
-        Permission.camera.request();
-      });
+    } else if (status.isDenied) {
+      // Permission is denied, show a dialog or retry
+      status = await Permission.camera.request();
+      if (status.isGranted) {
+        setState(() {
+          isPermissionGranted = true;
+        });
+      }
+    } else if (status.isPermanentlyDenied) {
+      // Permission is permanently denied, open app settings
+      openAppSettings();
     }
   }
 
@@ -101,7 +159,7 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () {
-            widget.options.onResponse(ResType.close, null);
+            widget.close('close');
             Navigator.pop(context);
           },
         ),
@@ -110,24 +168,37 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
           ? Stack(
               children: [
                 InAppWebView(
-                  initialSettings: InAppWebViewSettings(
-                    allowsInlineMediaPlayback: true,
-                    cacheEnabled: false,
-                    clearCache: true,
-                  ),
+                  key: webViewKey,
+                  gestureRecognizers: gestureRecognizers,
+                  initialSettings: options,
                   initialData: InAppWebViewInitialData(
-                    baseUrl: WebUri("https://longswipe.com"),
-                    historyUrl: WebUri("https://longswipe.com"),
-                    mimeType: "text/html",
+                    baseUrl: WebUri('https://longswipe.com'),
+                    historyUrl: WebUri('https://longswipe.com'),
+                    mimeType: 'text/html',
                     data: _getHtmlContent(),
                   ),
+                  initialUrlRequest: URLRequest(
+                    url: WebUri('https://longswipe.com'),
+                  ),
+                  pullToRefreshController: pullToRefreshController,
                   onWebViewCreated: (controller) {
                     _webViewController = controller;
+
+                     // Add error handling for the WebView
+                    _webViewController.setOptions(
+                      options: InAppWebViewOptions(
+                        onWebViewCrashed: (controller) {
+                          // Handle WebView crash
+                          widget.error("WebView crashed");
+                          Navigator.pop(context);
+                        },
+                      ),
+                    );
 
                     _webViewController.addJavaScriptHandler(
                       handlerName: 'onSuccessCallback',
                       callback: (response) {
-                        widget.options.onResponse(ResType.success, response.first);
+                        widget.success(response.first);
                         Navigator.pop(context);
                       },
                     );
@@ -135,14 +206,14 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
                     _webViewController.addJavaScriptHandler(
                       handlerName: 'onErrorCallback',
                       callback: (error) {
-                        widget.options.onResponse(ResType.error, error.first);
+                        widget.error(error.first);
                       },
                     );
 
                     _webViewController.addJavaScriptHandler(
                       handlerName: 'onCloseCallback',
                       callback: (response) {
-                        widget.options.onResponse(ResType.close, null);
+                        widget.close('close');
                         Navigator.pop(context);
                       },
                     );
@@ -150,10 +221,31 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
                     _webViewController.addJavaScriptHandler(
                       handlerName: 'onStartCallback',
                       callback: (response) {
-                        widget.options.onResponse(ResType.start, null);
-                        widget.onLoaded();
+                        widget.success(null); // Notify that the script is loaded
                       },
                     );
+                  },
+                  onPermissionRequest: Platform.isAndroid
+                    ? null
+                    : (controller, origin) async {
+                        return PermissionResponse(
+                          resources: [],
+                          action: PermissionResponseAction.GRANT,
+                        );
+                      },
+                  onLoadStop: (controller, url) {
+                    pullToRefreshController.endRefreshing();
+                  },
+                  onReceivedError: (controller, url, code) {
+                    pullToRefreshController.endRefreshing();
+                  },
+                  onProgressChanged: (controller, progress) {
+                    if (progress == 100) {
+                      pullToRefreshController.endRefreshing();
+                    }
+                    setState(() {
+                      this.progress = progress / 100;
+                    });
                   },
                   androidOnPermissionRequest: (controller, origin, resources) async {
                     return PermissionRequestResponse(
@@ -161,13 +253,15 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
                       action: PermissionRequestResponseAction.GRANT,
                     );
                   },
-                  onProgressChanged: (controller, progress) {
-                    setState(() {
-                      this.progress = progress / 100;
-                    });
+                  androidOnGeolocationPermissionsShowPrompt: (controller, origin) async {
+                    return GeolocationPermissionShowPromptResponse(
+                      allow: true,
+                      origin: origin,
+                      retain: true,
+                    );
                   },
                   onConsoleMessage: (controller, consoleMessage) {
-                    print("Console: ${consoleMessage.message}");
+                    print('Console: ${consoleMessage.message}');
                   },
                 ),
                 progress < 1.0
@@ -214,7 +308,7 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
             <div id="longswipe-container"></div>
           </div>
           
-          <script src="${DEFAULT_URI}"></script>
+          <script src="$DEFAULT_URI"></script>
           <script>
             document.addEventListener('DOMContentLoaded', function() {
               try {
