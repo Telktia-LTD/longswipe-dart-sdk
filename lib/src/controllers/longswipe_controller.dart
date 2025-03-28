@@ -360,32 +360,8 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
                   window.flutter_inappwebview.callHandler('onCloseCallback');
                 };
                 
-                // Request camera and microphone permissions explicitly
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                  navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-                    .then(function(stream) {
-                      console.log('Camera and microphone access granted');
-                      // Stop the stream immediately, we just needed to request permission
-                      stream.getTracks().forEach(track => track.stop());
-                      
-                      // Create instance
-                      window.longswipeInstance = new LongswipeConnect(options);
-                      window.longswipeInstance.setup();
-                      
-                      // Notify Flutter that the script is loaded
-                      window.flutter_inappwebview.callHandler('onStartCallback');
-                      
-                      // Open the modal
-                      window.longswipeInstance.open();
-                    })
-                    .catch(function(error) {
-                      console.error('Error accessing camera or microphone:', error);
-                      window.flutter_inappwebview.callHandler('onErrorCallback', 'Error accessing camera or microphone: ' + error.message);
-                    });
-                } else {
-                  // Fallback for browsers that don't support getUserMedia
-                  console.warn('getUserMedia not supported, proceeding without explicit permission request');
-                  
+                // Try to create the Longswipe instance regardless of camera access
+                try {
                   // Create instance
                   window.longswipeInstance = new LongswipeConnect(options);
                   window.longswipeInstance.setup();
@@ -395,6 +371,29 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
                   
                   // Open the modal
                   window.longswipeInstance.open();
+                  
+                  // Request camera and microphone permissions explicitly, but don't block UI
+                  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ 
+                      video: { facingMode: "user" }, // Prefer front camera
+                      audio: true 
+                    })
+                    .then(function(stream) {
+                      console.log('Camera and microphone access granted');
+                      // Stop the stream immediately, we just needed to request permission
+                      stream.getTracks().forEach(track => track.stop());
+                    })
+                    .catch(function(error) {
+                      console.warn('Camera or microphone access issue (non-blocking):', error.name, error.message);
+                      // Don't block the UI, just log the error
+                    });
+                  } else {
+                    // Fallback for browsers that don't support getUserMedia
+                    console.warn('getUserMedia not supported, proceeding anyway');
+                  }
+                } catch (e) {
+                  console.error('Error initializing Longswipe:', e);
+                  window.flutter_inappwebview.callHandler('onErrorCallback', 'Error initializing Longswipe: ' + e.message);
                 }
               } catch (e) {
                 console.error('Error initializing Longswipe:', e);
