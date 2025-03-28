@@ -314,131 +314,24 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
             <div id="longswipe-container"></div>
           </div>
           
-          <script src="$DEFAULT_URI"></script>
+          <script src="${DEFAULT_URI}"></script>
           <script>
-            // Global error handler to catch any unhandled errors
-            window.onerror = function(message, source, lineno, colno, error) {
-              console.error('Global error:', message);
-              if (window.flutter_inappwebview) {
-                window.flutter_inappwebview.callHandler('onErrorCallback', 'Global error: ' + message);
-              }
-              return true; // Prevents the default error handling
-            };
-            
-            // Store original setTimeout
-            var originalSetTimeout = window.setTimeout;
-            
-            // Don't override setTimeout directly, as it might cause issues with the widget
-            // Instead, create a safe version that we'll use in our code
-            function safeSetTimeout(callback, delay) {
-              if (typeof callback !== 'function') {
-                console.warn('setTimeout called with non-function callback');
-                return originalSetTimeout(function() {}, delay || 0);
-              }
-              
-              return originalSetTimeout(function() {
-                try {
-                  callback();
-                } catch (e) {
-                  console.error('Error in setTimeout callback:', e);
-                  if (window.flutter_inappwebview) {
-                    window.flutter_inappwebview.callHandler('onErrorCallback', 'Error in setTimeout callback: ' + e.message);
-                  }
-                }
-              }, delay || 0);
-            }
-            
-            // Store original setInterval for reference
-            var originalSetInterval = window.setInterval;
-            
-            // Monitor for potential crashes using recursive setTimeout instead of setInterval
-            var lastActivityTime = Date.now();
-            var crashMonitorActive = true;
-            
-            function monitorCrashes() {
-              if (!crashMonitorActive) return;
-              
-              var now = Date.now();
-              if (now - lastActivityTime > 5000) {
-                // No activity for 5 seconds, might indicate a problem
-                console.warn('No activity detected for 5 seconds, checking if UI is responsive');
-                
-                // Try to update the lastActivityTime
-                lastActivityTime = now;
-                
-                // Check if we can still interact with the DOM
-                try {
-                  document.body.dataset.timestamp = now.toString();
-                  if (document.body.dataset.timestamp !== now.toString()) {
-                    throw new Error('DOM manipulation failed');
-                  }
-                } catch (e) {
-                  console.error('UI appears to be frozen:', e);
-                  if (window.flutter_inappwebview) {
-                    window.flutter_inappwebview.callHandler('onCrashCallback');
-                  }
-                  crashMonitorActive = false;
-                  return;
-                }
-              }
-              
-              // Schedule the next check using originalSetTimeout to avoid any issues
-              originalSetTimeout(monitorCrashes, 1000);
-            }
-            
-            // Start the crash monitor
-            originalSetTimeout(monitorCrashes, 1000);
-            
-            // Update lastActivityTime on user interaction
-            document.addEventListener('click', function() {
-              lastActivityTime = Date.now();
-            });
-            
-            document.addEventListener('touchstart', function() {
-              lastActivityTime = Date.now();
-            });
-            
-            document.addEventListener('keydown', function() {
-              lastActivityTime = Date.now();
-            });
-            
             document.addEventListener('DOMContentLoaded', function() {
               try {
                 // Create options with callbacks
                 var options = $optionsJson;
                 
-                // Add callbacks with error handling
+                // Add callbacks
                 options.onSuccess = function(data) {
-                  try {
-                    lastActivityTime = Date.now();
-                    if (window.flutter_inappwebview) {
-                      window.flutter_inappwebview.callHandler('onSuccessCallback', data);
-                    }
-                  } catch (e) {
-                    console.error('Error in onSuccess callback:', e);
-                  }
+                  window.flutter_inappwebview.callHandler('onSuccessCallback', data);
                 };
                 
                 options.onError = function(error) {
-                  try {
-                    lastActivityTime = Date.now();
-                    if (window.flutter_inappwebview) {
-                      window.flutter_inappwebview.callHandler('onErrorCallback', error);
-                    }
-                  } catch (e) {
-                    console.error('Error in onError callback:', e);
-                  }
+                  window.flutter_inappwebview.callHandler('onErrorCallback', error);
                 };
                 
                 options.onClose = function() {
-                  try {
-                    lastActivityTime = Date.now();
-                    if (window.flutter_inappwebview) {
-                      window.flutter_inappwebview.callHandler('onCloseCallback');
-                    }
-                  } catch (e) {
-                    console.error('Error in onClose callback:', e);
-                  }
+                  window.flutter_inappwebview.callHandler('onCloseCallback');
                 };
                 
                 // Create instance
@@ -446,25 +339,19 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
                 window.longswipeInstance.setup();
                 
                 // Notify Flutter that the script is loaded
-                if (window.flutter_inappwebview) {
-                  window.flutter_inappwebview.callHandler('onStartCallback');
-                }
+                window.flutter_inappwebview.callHandler('onStartCallback');
                 
-                // Open the modal with a slight delay to ensure everything is initialized
-                safeSetTimeout(function() {
-                  lastActivityTime = Date.now();
-                  window.longswipeInstance.open();
-                }, 100);
+                // Open the modal
+                window.longswipeInstance.open();
               } catch (e) {
                 console.error('Error initializing Longswipe:', e);
-                if (window.flutter_inappwebview) {
-                  window.flutter_inappwebview.callHandler('onErrorCallback', 'Error initializing Longswipe: ' + e.message);
-                }
+                window.flutter_inappwebview.callHandler('onErrorCallback', 'Error initializing Longswipe: ' + e.message);
               }
             });
           </script>
         </body>
       </html>
     ''';
+  
   }
 }
