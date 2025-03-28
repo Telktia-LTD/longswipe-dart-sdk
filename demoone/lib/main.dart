@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:longswipe_flutter/longswipe_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Request camera permission at app startup
+  await Permission.camera.request();
+  
   runApp(const MyApp());
 }
 
