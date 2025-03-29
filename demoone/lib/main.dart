@@ -120,6 +120,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   String _responseMessage = '';
+  String _responseMessageSuccess = '';
   Map<Permission, PermissionStatus> _permissionStatuses = {};
 
   @override
@@ -154,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       switch (type) {
         case ResType.success:
-          _responseMessage = 'Payment successful: ${data ?? 'No data'}';
+          _responseMessageSuccess = 'Payment successful: ${data ?? 'No data'}';
           break;
         case ResType.error:
           _responseMessage = 'Error: ${data ?? 'Unknown error'}';
@@ -200,6 +201,14 @@ class _MyHomePageState extends State<MyHomePage> {
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 20),
+             Text(
+              _responseMessageSuccess,
+              style: TextStyle(
+                color: _responseMessageSuccess.contains('Error') ? Colors.red : Colors.green,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
             Text(
               _responseMessage,
               style: TextStyle(

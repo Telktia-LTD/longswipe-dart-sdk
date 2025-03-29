@@ -142,7 +142,6 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
       'onSuccessCallback',
       onMessageReceived: (JavaScriptMessage message) {
         widget.success(jsonDecode(message.message));
-        Navigator.pop(context);
       },
     );
     
