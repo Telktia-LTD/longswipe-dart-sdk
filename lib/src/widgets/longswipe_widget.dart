@@ -10,6 +10,8 @@ class LongswipeWidget extends StatefulWidget {
   
   /// Unique identifier for the transaction
   final String referenceId;
+
+  final Environment? environment;
   
   /// Callback function for widget events
   final void Function(ResType type, dynamic data) onResponse;
@@ -40,6 +42,7 @@ class LongswipeWidget extends StatefulWidget {
     Key? key,
     required this.apiKey,
     required this.referenceId,
+    required this.environment,
     required this.onResponse,
     this.defaultCurrency,
     this.defaultAmount,
@@ -79,6 +82,7 @@ class _LongswipeWidgetState extends State<LongswipeWidget> {
   void _initController() {
     _controller = LongswipeController(
       options: LongswipeControllerOptions(
+        environment: widget.environment,
         apiKey: widget.apiKey,
         referenceId: widget.referenceId,
         onResponse: widget.onResponse,

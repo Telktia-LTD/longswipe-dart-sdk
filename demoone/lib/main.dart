@@ -224,6 +224,7 @@ class _MyHomePageState extends State<MyHomePage> {
               referenceId: 'order_${DateTime.now().millisecondsSinceEpoch}',
               onResponse: _handleLongswipeResponse,
               defaultCurrency: Currency.NGN,
+              environment: Environment.sandbox,
               defaultAmount: 10.0,
               metaData: const {'userid':'343', 'useremail':'O5N3S@example.com'},
               buttonText: 'Pay with Longswipe',
@@ -244,6 +245,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 referenceId: 'order_${DateTime.now().millisecondsSinceEpoch}',
                 onResponse: _handleLongswipeResponse,
                 defaultCurrency: Currency.USDT,
+                environment: Environment.sandbox,
                 defaultAmount: 100,
                   metaData: const {'userid':'343', 'useremail':'O5N3S@example.com', 'source':'flutter-sdk-custom-button'},
                 child: Container(
