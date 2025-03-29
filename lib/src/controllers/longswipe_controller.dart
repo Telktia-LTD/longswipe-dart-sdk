@@ -90,7 +90,6 @@ class LongswipeController {
   bool get isLoading => _isLoading;
   
   /// Alias for open method to maintain backward compatibility
-  @Deprecated('Use open() instead')
   Future<void> openModal(BuildContext context) async {
     return open(
       context,

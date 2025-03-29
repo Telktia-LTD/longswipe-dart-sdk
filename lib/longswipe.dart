@@ -1,11 +1,6 @@
 library longswipe;
-
-// Export widgets
 export 'src/widgets/longswipe_widget.dart';
-
-// Export controllers
 export 'src/controllers/longswipe_controller.dart';
-
-// Export models
 export 'src/models/longswipe_options.dart';
 export 'src/models/response_types.dart';
+export 'package:permission_handler/permission_handler.dart';
