@@ -21,14 +21,14 @@ This SDK provides two ways to integrate the Longswipe Widget:
 A lightweight widget that loads the Longswipe Widget script and provides a simple interface with built-in UI for integrating the widget into your application.
 
 ## Image samples
-<div style={{marginBottom:'10px', display: 'flex', gap: '10px', alignItems: 'center' }}>
-  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1743254744/longswipe_package_images/screen1_fsrnrg.png" alt="Longswipe" style={{ maxWidth: '45%' }} />
-  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1743254744/longswipe_package_images/screen2_wst0ju.png" alt="Longswipe" style={{ maxWidth: '45%' }} />
+<div align="center">
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1743254744/longswipe_package_images/screen1_fsrnrg.png" width="40%" />
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1743254744/longswipe_package_images/screen2_wst0ju.png" width="40%" />
 </div>
 
-<div style={{marginBottom:'10px', display: 'flex', gap: '10px', alignItems: 'center' }}>
-  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1743254744/longswipe_package_images/screen3_r75knu.png" alt="Longswipe" style={{ maxWidth: '45%' }} />
-  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1743254745/longswipe_package_images/screen5_rvnlbd.png" alt="Longswipe" style={{ maxWidth: '45%' }} />
+<div align="center">
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1743254744/longswipe_package_images/screen3_r75knu.png" width="40%" />
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1743254745/longswipe_package_images/screen5_rvnlbd.png" width="40%" />
 </div>
 
 ```dart
