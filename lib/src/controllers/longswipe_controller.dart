@@ -24,13 +24,43 @@ class LongswipeController {
   LongswipeController({
     required this.options,
   });
+  
+  /// Check and request camera permission
+  /// Returns true if permission is granted, false otherwise
+  Future<bool> requestCameraPermission() async {
+    final status = await Permission.camera.status;
+    
+    if (status.isGranted) {
+      return true;
+    }
+    
+    final result = await Permission.camera.request();
+    
+    if (result.isPermanentlyDenied) {
+      openAppSettings();
+    }
+    
+    return result.isGranted;
+  }
 
   /// Open the Longswipe modal
+  /// If [checkCameraPermission] is true, camera permission will be requested before opening the modal
   Future<void> open(BuildContext context, {
     Function(dynamic result)? onSuccess,
     Function(dynamic close)? onClose,
-    Function(dynamic error)? onError
+    Function(dynamic error)? onError,
+    bool checkCameraPermission = true,
   }) async {
+    // Check camera permission if required
+    // if (checkCameraPermission) {
+    //   final hasPermission = await requestCameraPermission();
+    //   if (!hasPermission) {
+    //     if (onError != null) {
+    //       onError('Camera permission denied');
+    //     }
+    //     return;
+    //   }
+    // }
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -113,26 +143,64 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
   
   void _initWebViewController() {
     // Create a WebViewController with initial settings
-    final WebViewController controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (int progress) {
-            setState(() {
-              this.progress = progress / 100;
-            });
-          },
-          onPageStarted: (String url) {},
-          onPageFinished: (String url) {},
-          onWebResourceError: (WebResourceError error) {
-            widget.error("WebView error: ${error.description}");
-          },
-          onNavigationRequest: (NavigationRequest request) {
-            return NavigationDecision.navigate;
-          },
-        ),
-      );
+    final WebViewController controller = WebViewController(
+      onPermissionRequest: (request) => request.grant(),
+    );
+    
+    // Configure JavaScript mode
+    controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+    
+    // Set background color
+    controller.setBackgroundColor(const Color(0x00000000));
+    
+    // Configure navigation delegate
+    controller.setNavigationDelegate(
+      NavigationDelegate(
+        onProgress: (int progress) {
+          setState(() {
+            this.progress = progress / 100;
+          });
+        },
+        onPageStarted: (String url) {},
+        onPageFinished: (String url) {
+          // Execute JavaScript to check camera permissions after page loads
+          controller.runJavaScript('''
+            if (navigator.permissions && navigator.permissions.query) {
+              navigator.permissions.query({name: 'camera'}).then(function(permissionStatus) {
+                window.consoleLog.postMessage('Camera permission status: ' + permissionStatus.state);
+                permissionStatus.onchange = function() {
+                  window.consoleLog.postMessage('Camera permission changed to: ' + this.state);
+                };
+              }).catch(function(error) {
+                window.consoleLog.postMessage('Error querying camera permission: ' + error);
+              });
+            } else {
+              window.consoleLog.postMessage('Permissions API not supported');
+            }
+          ''');
+        },
+        onWebResourceError: (WebResourceError error) {
+          widget.error("WebView error: ${error.description}");
+        },
+        onNavigationRequest: (NavigationRequest request) {
+          return NavigationDecision.navigate;
+        },
+      ),
+    );
+    
+    // Enable JavaScript access to camera
+    if (Platform.isAndroid) {
+      controller.runJavaScript('''
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then(function(stream) {
+            window.consoleLog.postMessage('Camera access granted on Android');
+            stream.getTracks().forEach(track => track.stop());
+          })
+          .catch(function(err) {
+            window.consoleLog.postMessage('Error accessing camera on Android: ' + err);
+          });
+      ''');
+    }
     
     // Load HTML content
     controller.loadHtmlString(_getHtmlContent(), baseUrl: 'https://longswipe.com');
@@ -246,8 +314,11 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
         <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, shrink-to-fit=1"/>
-          <!-- Add permissions meta tags for iOS -->
-          <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: https://ssl.gstatic.com; style-src * 'self' 'unsafe-inline'; media-src * blob: 'self' 'unsafe-inline'; img-src * 'self' data: content:; connect-src * 'self'; frame-src *;">
+          <!-- Camera permissions meta tags -->
+          <meta name="apple-mobile-web-app-capable" content="yes">
+          <meta name="mobile-web-app-capable" content="yes">
+          <!-- Updated Content Security Policy to allow camera access -->
+          <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: blob: mediastream: https://ssl.gstatic.com; style-src * 'self' 'unsafe-inline'; media-src * blob: 'self' 'unsafe-inline'; img-src * 'self' data: content:; connect-src * 'self'; frame-src *;">
           <title>Longswipe Payment</title>
           <style>
             body, html {
@@ -276,6 +347,23 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
           <script src="${DEFAULT_URI}"></script>
           <script>
              document.addEventListener('DOMContentLoaded', function() {
+      // Check for camera permissions
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        console.log("Camera API is available");
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then(function(stream) {
+            console.log("Camera access granted");
+            stream.getTracks().forEach(track => track.stop()); // Stop the camera after permission check
+          })
+          .catch(function(err) {
+            console.error("Error accessing camera:", err);
+            window.onErrorCallback.postMessage("Error accessing camera: " + err.toString());
+          });
+      } else {
+        console.error("Camera API is not available");
+        window.onErrorCallback.postMessage("Camera API is not available on this device or browser");
+      }
+      
       // Initialize the widget with required defaultCurrency and defaultAmount
       const connect = new LongswipeConnect({
         ...${optionsJson},
