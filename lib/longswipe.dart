@@ -1,4 +1,4 @@
-library longswipe_flutter;
+library longswipe;
 
 // Export widgets
 export 'src/widgets/longswipe_widget.dart';
