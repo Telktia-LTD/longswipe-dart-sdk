@@ -99,13 +99,13 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
   };
   final GlobalKey webViewKey = GlobalKey();
   late WebViewController _webViewController;
-  bool isPermissionGranted = false;
+  bool isGranted = false;
   double progress = 0;
   
   @override
   void initState() {
     super.initState();
-    _requestPermissions();
+    getPermissions();
     
     // Initialize WebView controller
     _initWebViewController();
@@ -185,52 +185,23 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
     _webViewController = controller;
   }
 
-  Future<void> _requestPermissions() async {
-    // List of permissions needed for the app
-    List<Permission> permissions = [
-      Permission.camera,
-    ];
-    
-    // Add platform-specific permissions
-    if (Platform.isIOS) {
-      permissions.addAll([
-        Permission.microphone,
-        Permission.photos,
-        Permission.location,
-      ]);
-    }
-    
-    // Request each permission
-    bool allGranted = true;
-    for (var permission in permissions) {
-      var status = await permission.status;
-      
-      if (!status.isGranted) {
-        status = await permission.request();
-        
-        if (!status.isGranted) {
-          allGranted = false;
-          debugPrint('${permission.toString()} is not granted. Status: $status');
-          
-          if (status.isPermanentlyDenied) {
-            // Show a dialog to guide the user to app settings
-            debugPrint('${permission.toString()} is permanently denied. Please enable it in app settings.');
-          }
-        }
+  Future<void> getPermissions() async {
+    await initPermissions();
+  }
+
+  Future<void> initPermissions() async {
+    await Permission.camera.request().then((value) {
+      if (value.isPermanentlyDenied) {
+        openAppSettings();
       }
-    }
-    
-    setState(() {
-      isPermissionGranted = allGranted;
     });
-    
-    // If not all permissions are granted, but we still want to proceed
-    // with limited functionality
-    if (!allGranted) {
-      Future.delayed(const Duration(seconds: 2), () {
-        setState(() {
-          isPermissionGranted = true; // Allow the WebView to load anyway
-        });
+    if (await Permission.camera.request().isGranted) {
+      setState(() {
+        isGranted = true;
+      });
+    } else {
+      Permission.camera.onDeniedCallback(() {
+        Permission.camera.request();
       });
     }
   }
@@ -248,7 +219,7 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
           },
         ),
       ),
-      body: isPermissionGranted
+      body: isGranted
           ? Stack(
               children: [
                 WebViewWidget(
@@ -268,7 +239,7 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
   String _getHtmlContent() {
     final optionsMap = widget.options.toMap();
     final optionsJson = json.encode(optionsMap);
-    
+    debugPrint(optionsJson);
     return '''
       <!DOCTYPE html>
       <html lang="en">
@@ -304,83 +275,60 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
           
           <script src="${DEFAULT_URI}"></script>
           <script>
-            // Console log wrapper to send logs to Flutter
-            console.log = (function(originalLog) {
-              return function(...args) {
-                originalLog.apply(console, args);
-                window.consoleLog.postMessage(args.map(arg => 
-                  typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-                ).join(' '));
-              };
-            })(console.log);
-            
-            console.error = (function(originalError) {
-              return function(...args) {
-                originalError.apply(console, args);
-                window.consoleLog.postMessage('ERROR: ' + args.map(arg => 
-                  typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-                ).join(' '));
-              };
-            })(console.error);
-            
-            document.addEventListener('DOMContentLoaded', function() {
-              try {
-                // Create options with callbacks
-                var options = $optionsJson;
+             document.addEventListener('DOMContentLoaded', function() {
+      // Initialize the widget with required defaultCurrency and defaultAmount
+      const connect = new LongswipeConnect({
+        ...${optionsJson},
+        onSuccess: function(data) {
+          console.log('Success:', data);
+         window.onSuccessCallback.postMessage(JSON.stringify(data));
+          // showResult('Success', data);
+        },
+        onError: function(error) {
+          console.error('Error:', error);
+          window.onErrorCallback.postMessage(error);
                 
-                // Add callbacks
-                options.onSuccess = function(data) {
-                  window.onSuccessCallback.postMessage(JSON.stringify(data));
-                };
-                
-                options.onError = function(error) {
-                  window.onErrorCallback.postMessage(error);
-                };
-                
-                options.onClose = function() {
-                  window.onCloseCallback.postMessage('close');
-                };
-                
-                // Try to create the Longswipe instance regardless of camera access
-                try {
-                  // Create instance
-                  window.longswipeInstance = new LongswipeConnect(options);
-                  window.longswipeInstance.setup();
-                  
-                  // Notify Flutter that the script is loaded
-                  window.onStartCallback.postMessage('started');
-                  
-                  // Open the modal
-                  window.longswipeInstance.open();
-                  
-                  // Request camera and microphone permissions explicitly, but don't block UI
-                  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    navigator.mediaDevices.getUserMedia({ 
-                      video: { facingMode: "environment" }, // Prefer front camera
-                      audio: true 
-                    })
-                    .then(function(stream) {
-                      console.log('Camera and microphone access granted');
-                      // Stop the stream immediately, we just needed to request permission
-                      stream.getTracks().forEach(track => track.stop());
-                    })
-                    .catch(function(error) {
-                      console.warn('Camera or microphone access issue (non-blocking):', error.name, error.message);
-                      // Don't block the UI, just log the error
-                    });
-                  } else {
-                    // Fallback for browsers that don't support getUserMedia
-                    console.warn('getUserMedia not supported, proceeding anyway');
-                  }
-                } catch (e) {
-                  console.error('Error initializing Longswipe:', e);
-                  window.onErrorCallback.postMessage('Error initializing Longswipe: ' + e.message);
-                }
-              } catch (e) {
-                console.error('Error initializing Longswipe:', e);
-                window.onErrorCallback.postMessage('Error initializing Longswipe: ' + e.message);
-              }
-            });
+          // showResult('Error', error);
+        },
+        onClose: function() {
+         //  console.log('Widget closed');
+          window.onCloseCallback.postMessage('close');
+        }
+      });
+      
+      // Set up widget styles with modern options
+      connect.setup({
+        backgroundColor: 'white',
+        textColor: '#111827',
+        buttonColor: '#6366F1', // Indigo
+        buttonTextColor: 'white',
+        borderRadius: '0.75rem',
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        inputBackgroundColor: '#F9FAFB',
+        inputBorderColor: '#D1D5DB',
+        cardBackgroundColor: '#fff',
+        cardBorderColor: '#E5E7EB',
+        successColor: '#10B981', // Emerald
+        errorColor: '#EF4444', // Red
+        animationSpeed: '0.3s'
+      });
+      
+      // Open widget automatically
+      connect.open();
+      
+      // Function to display results
+      function showResult(type, data) {
+        const resultDiv = document.getElementById('result');
+        const resultContent = document.getElementById('result-content');
+        
+        resultDiv.classList.remove('d-none');
+        resultDiv.classList.remove('alert-success', 'alert-danger');
+        resultDiv.classList.add(type === 'Success' ? 'alert-success' : 'alert-danger');
+        resultContent.textContent = type + ': ' + JSON.stringify(data, null, 2);
+      }
+    });
+  
           </script>
         </body>
       </html>
