@@ -9,8 +9,18 @@ enum Currency {
   USDC,
 }
 
+enum Environment {
+  production,
+  sandbox,
+}
+
 /// Extension on Currency to convert to string
 extension CurrencyExtension on Currency {
+  String toValue() => toString().split('.').last;
+}
+
+/// Extension on Environment to convert to string
+extension EnvironmentExtension on Environment {
   String toValue() => toString().split('.').last;
 }
 
@@ -19,6 +29,7 @@ class LongswipeOptions {
   /// Your Longswipe API key
   final String apiKey;
   
+  final Environment? environment;
   /// Unique identifier for the transaction
   final String referenceId;
   
@@ -38,6 +49,7 @@ class LongswipeOptions {
   LongswipeOptions({
     required this.apiKey,
     required this.referenceId,
+    required this.environment,
     this.defaultCurrency,
     this.defaultAmount,
     this.config,
@@ -49,6 +61,7 @@ class LongswipeOptions {
     return {
       'apiKey': apiKey,
       'referenceId': referenceId,
+      'environment': environment!.toValue(),
       if (defaultCurrency != null) 'defaultCurrency': defaultCurrency!.toValue(),
       if (defaultAmount != null) 'defaultAmount': defaultAmount,
       if (config != null) 'config': config,
@@ -65,6 +78,7 @@ class LongswipeControllerOptions extends LongswipeOptions {
   /// Constructor
   LongswipeControllerOptions({
     required super.apiKey,
+    required super.environment,
     required super.referenceId,
     required this.onResponse,
     super.defaultCurrency,
