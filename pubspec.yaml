@@ -1,4 +1,4 @@
-name: longswipe_flutter
+name: longswipe
 description: A Flutter package for integrating the Longswipe Widget into your application. Provides both a widget-based approach and a controller-based approach for maximum flexibility.
 version: 0.1.0
 homepage: https://github.com/Telktia-LTD/longswipe-flutter-sdk

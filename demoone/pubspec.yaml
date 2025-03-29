@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   
   # Local package dependency
-  longswipe_flutter:
+  longswipe:
     path: ../
 
 dev_dependencies:

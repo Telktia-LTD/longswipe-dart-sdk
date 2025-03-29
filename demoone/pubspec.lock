@@ -128,7 +128,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.1.1"
-  longswipe_flutter:
+  longswipe:
     dependency: "direct main"
     description:
       path: ".."

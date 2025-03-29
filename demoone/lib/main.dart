@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:longswipe_flutter/longswipe_flutter.dart';
+import 'package:longswipe/longswipe.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io' show Platform;
 
@@ -224,15 +224,13 @@ class _MyHomePageState extends State<MyHomePage> {
               referenceId: 'order_${DateTime.now().millisecondsSinceEpoch}',
               onResponse: _handleLongswipeResponse,
               defaultCurrency: Currency.NGN,
-              environment: Environment.sandbox,
+              environment: Environment.production,
               defaultAmount: 10.0,
-              metaData: const {'userid':'343', 'useremail':'O5N3S@example.com'},
+              metaData: const {
+                'userid':'343',
+                'useremail':'O5N3S@example.com'
+              },
               buttonText: 'Pay with Longswipe',
-              buttonStyle: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
             ),
               const SizedBox(height: 20),
             const Text(

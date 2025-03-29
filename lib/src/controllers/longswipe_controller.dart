@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -132,6 +133,10 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
   bool isGranted = false;
   double progress = 0;
   
+  // Timer for auto-closing the webview if JavaScript fails
+  Timer? _closeTimeoutTimer;
+  bool _isWebViewClosed = false;
+  
   @override
   void initState() {
     super.initState();
@@ -139,6 +144,12 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
     
     // Initialize WebView controller
     _initWebViewController();
+  }
+  
+  @override
+  void dispose() {
+    _closeTimeoutTimer?.cancel();
+    super.dispose();
   }
   
   void _initWebViewController() {
@@ -178,9 +189,35 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
               window.consoleLog.postMessage('Permissions API not supported');
             }
           ''');
+          
+          // Set up a fallback timer to close the webview if JavaScript fails
+          // This will ensure the webview is closed even if the JavaScript channel approach fails
+          _closeTimeoutTimer?.cancel();
+          _closeTimeoutTimer = Timer(const Duration(seconds: 60), () {
+            if (!_isWebViewClosed && mounted) {
+              debugPrint('Fallback timer triggered: closing webview');
+              _isWebViewClosed = true;
+              widget.close('close_fallback');
+              Navigator.pop(context);
+            }
+          });
         },
         onWebResourceError: (WebResourceError error) {
-          widget.error("WebView error: ${error.description}");
+          // Log the error
+          debugPrint('WebView error: ${error.description}');
+          
+          // For critical errors, close the webview
+          if (error.errorCode >= 400) {
+            if (!_isWebViewClosed && mounted) {
+              _isWebViewClosed = true;
+              _closeTimeoutTimer?.cancel();
+              widget.error("WebView error: ${error.description}");
+              Navigator.pop(context);
+            }
+          } else {
+            // For non-critical errors, just report them
+            widget.error("WebView error: ${error.description}");
+          }
         },
         onNavigationRequest: (NavigationRequest request) {
           return NavigationDecision.navigate;
@@ -202,10 +239,7 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
       ''');
     }
     
-    // Load HTML content
-    controller.loadHtmlString(_getHtmlContent(), baseUrl: 'https://longswipe.com');
-    
-    // Set up JavaScript channels for communication
+    // Set up JavaScript channels for communication first
     controller.addJavaScriptChannel(
       'onSuccessCallback',
       onMessageReceived: (JavaScriptMessage message) {
@@ -223,8 +257,12 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
     controller.addJavaScriptChannel(
       'onCloseCallback',
       onMessageReceived: (JavaScriptMessage message) {
-        widget.close('close');
-        Navigator.pop(context);
+        if (!_isWebViewClosed) {
+          _isWebViewClosed = true;
+          _closeTimeoutTimer?.cancel(); // Cancel the fallback timer
+          widget.close('close');
+          Navigator.pop(context);
+        }
       },
     );
     
@@ -238,8 +276,12 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
     controller.addJavaScriptChannel(
       'onCrashCallback',
       onMessageReceived: (JavaScriptMessage message) {
-        widget.error("WebView crashed or encountered a critical error");
-        Navigator.pop(context);
+        if (!_isWebViewClosed) {
+          _isWebViewClosed = true;
+          _closeTimeoutTimer?.cancel(); // Cancel the fallback timer
+          widget.error("WebView crashed or encountered a critical error");
+          Navigator.pop(context);
+        }
       },
     );
     
@@ -247,8 +289,22 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
       'consoleLog',
       onMessageReceived: (JavaScriptMessage message) {
         debugPrint('Console: ${message.message}');
+        
+        // Check if this is a fallback close message
+        if (message.message.contains('Failed to close webview')) {
+          if (!_isWebViewClosed && mounted) {
+            debugPrint('Fallback close via consoleLog triggered');
+            _isWebViewClosed = true;
+            _closeTimeoutTimer?.cancel();
+            widget.close('close_fallback_console');
+            Navigator.pop(context);
+          }
+        }
       },
     );
+    
+    // Load HTML content after setting up channels
+    controller.loadHtmlString(_getHtmlContent(), baseUrl: 'https://longswipe.com');
     
     _webViewController = controller;
   }
@@ -282,8 +338,12 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () {
-            widget.close('close');
-            Navigator.pop(context);
+            if (!_isWebViewClosed) {
+              _isWebViewClosed = true;
+              _closeTimeoutTimer?.cancel(); // Cancel the fallback timer
+              widget.close('close_button');
+              Navigator.pop(context);
+            }
           },
         ),
       ),
@@ -320,6 +380,48 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
           <!-- Updated Content Security Policy to allow camera access -->
           <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: blob: mediastream: https://ssl.gstatic.com; style-src * 'self' 'unsafe-inline'; media-src * blob: 'self' 'unsafe-inline'; img-src * 'self' data: content:; connect-src * 'self'; frame-src *;">
           <title>Longswipe Payment</title>
+          <!-- Script to ensure JavaScript channels are initialized -->
+          <script>
+            // Create a global object to track channel availability
+            window.channelsReady = {
+              onSuccessCallback: false,
+              onErrorCallback: false,
+              onCloseCallback: false,
+              onStartCallback: false,
+              onCrashCallback: false,
+              consoleLog: false
+            };
+            
+            // Function to check if a channel exists and mark it as ready
+            function checkChannel(channelName) {
+              if (window[channelName]) {
+                window.channelsReady[channelName] = true;
+                console.log(channelName + ' is available');
+                return true;
+              }
+              return false;
+            }
+            
+            // Check channels periodically
+            var channelCheckInterval = setInterval(function() {
+              let allReady = true;
+              
+              for (let channel in window.channelsReady) {
+                if (!window.channelsReady[channel]) {
+                  if (checkChannel(channel)) {
+                    window.channelsReady[channel] = true;
+                  } else {
+                    allReady = false;
+                  }
+                }
+              }
+              
+              if (allReady) {
+                console.log('All channels are ready');
+                clearInterval(channelCheckInterval);
+              }
+            }, 100);
+          </script>
           <style>
             body, html {
               margin: 0;
@@ -379,8 +481,39 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
           // showResult('Error', error);
         },
         onClose: function() {
-         //  console.log('Widget closed');
-          window.onCloseCallback.postMessage('close');
+          console.log('Widget closed');
+          
+          // Function to attempt closing with retry logic
+          function attemptClose(retryCount) {
+            // Check if the channel exists and is ready
+            if (window.onCloseCallback && window.channelsReady.onCloseCallback) {
+              console.log('Using onCloseCallback to close webview');
+              window.onCloseCallback.postMessage('close');
+              return true;
+            } else {
+              console.error('onCloseCallback channel not available (attempt ' + retryCount + ')');
+              
+              if (retryCount < 5) {
+                // Retry with exponential backoff
+                var delay = 200 * Math.pow(1.5, retryCount);
+                console.log('Retrying in ' + delay + 'ms');
+                
+                setTimeout(function() {
+                  attemptClose(retryCount + 1);
+                }, delay);
+              } else {
+                console.error('Failed to close webview after multiple attempts');
+                // Try to use consoleLog as a fallback if available
+                if (window.consoleLog) {
+                  window.consoleLog.postMessage('Failed to close webview: onCloseCallback not available');
+                }
+              }
+              return false;
+            }
+          }
+          
+          // Start the close attempt process
+          attemptClose(0);
         }
       });
       
