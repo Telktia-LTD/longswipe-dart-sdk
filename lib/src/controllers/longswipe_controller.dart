@@ -52,15 +52,15 @@ class LongswipeController {
     bool checkCameraPermission = true,
   }) async {
     // Check camera permission if required
-    // if (checkCameraPermission) {
-    //   final hasPermission = await requestCameraPermission();
-    //   if (!hasPermission) {
-    //     if (onError != null) {
-    //       onError('Camera permission denied');
-    //     }
-    //     return;
-    //   }
-    // }
+    if (checkCameraPermission) {
+      final hasPermission = await requestCameraPermission();
+      if (!hasPermission) {
+        if (onError != null) {
+          onError('Camera permission denied');
+        }
+        return;
+      }
+    }
     await Navigator.push(
       context,
       MaterialPageRoute(
