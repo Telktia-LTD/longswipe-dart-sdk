@@ -356,7 +356,7 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
                   // Request camera and microphone permissions explicitly, but don't block UI
                   if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                     navigator.mediaDevices.getUserMedia({ 
-                      video: { facingMode: "user" }, // Prefer front camera
+                      video: { facingMode: "environment" }, // Prefer front camera
                       audio: true 
                     })
                     .then(function(stream) {
