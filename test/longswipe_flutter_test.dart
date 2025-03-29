@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:longswipe_flutter/longswipe_flutter.dart';
+import 'package:longswipe/longswipe.dart';
 
 void main() {
   group('LongswipeWidget', () {
@@ -13,6 +13,7 @@ void main() {
             body: LongswipeWidget(
               apiKey: 'test-api-key',
               referenceId: 'test-reference-id',
+              environment: Environment.sandbox,
               onResponse: (type, data) {},
             ),
           ),
@@ -33,6 +34,7 @@ void main() {
             body: LongswipeWidget(
               apiKey: 'test-api-key',
               referenceId: 'test-reference-id',
+              environment: Environment.sandbox,
               onResponse: (type, data) {},
               buttonText: 'Custom Text',
             ),
@@ -54,6 +56,7 @@ void main() {
             body: LongswipeWidget(
               apiKey: 'test-api-key',
               referenceId: 'test-reference-id',
+              environment: Environment.sandbox,
               onResponse: (type, data) {},
               child: const Text('Custom Widget'),
             ),
@@ -74,6 +77,7 @@ void main() {
         options: LongswipeControllerOptions(
           apiKey: 'test-api-key',
           referenceId: 'test-reference-id',
+          environment: Environment.sandbox,
           onResponse: (type, data) {},
           defaultCurrency: Currency.USDT,
           defaultAmount: 100,

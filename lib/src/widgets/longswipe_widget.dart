@@ -70,7 +70,7 @@ class _LongswipeWidgetState extends State<LongswipeWidget> {
   @override
   void didUpdateWidget(LongswipeWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Reinitialize controller if key properties change
     if (oldWidget.apiKey != widget.apiKey ||
         oldWidget.referenceId != widget.referenceId) {
@@ -103,28 +103,73 @@ class _LongswipeWidgetState extends State<LongswipeWidget> {
         child: widget.child!,
       );
     }
-    
+
     // Otherwise, render the default button
-    return ElevatedButton(
-      onPressed: () => _controller.openModal(context),
-      style: widget.buttonStyle ?? _defaultButtonStyle(),
-      child: Text(widget.buttonText ?? 'Pay with Longswipe'),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFA8518A), Color(0xFF3E4095)],
+          // Light purple to darker purple
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(8), // Pill shape
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x668E44AD), // Semi-transparent shadow
+            blurRadius: 8,
+            offset: Offset(0, 3),
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: () => _controller.openModal(context),
+        style: widget.buttonStyle ?? _defaultButtonStyle(),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo
+                Image.network(
+                  'https://res.cloudinary.com/dm9s6bfd1/image/upload/v1738080416/longswipe/logo/Longswipe_logo_icon_white_swge3g.png',
+                  height: 20,
+                ),
+                const SizedBox(width: 12),
+                // Text
+                Text(
+                  widget.buttonText ?? 'Pay with Longswipe',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
   /// Default button style
   ButtonStyle _defaultButtonStyle() {
     return ElevatedButton.styleFrom(
-      backgroundColor: const Color(0xFF0066FF),
+      backgroundColor: Colors.transparent,
       foregroundColor: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      shadowColor: Colors.transparent,
+      padding: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(30), // Match container's radius
       ),
-      textStyle: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-      ),
+      elevation: 0, // No elevation, we're using the container's shadow
     );
   }
 }
