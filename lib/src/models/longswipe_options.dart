@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'response_types.dart';
 
 /// Supported currencies for Longswipe
