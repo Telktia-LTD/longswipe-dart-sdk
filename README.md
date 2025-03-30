@@ -6,7 +6,7 @@ A Flutter SDK for integrating the Longswipe Widget into your application. Provid
 
 ```yaml
 dependencies:
-  longswipe: ^1.0.1
+  longswipe: ^1.0.2
 ```
 
 ## Integration Options
@@ -33,7 +33,7 @@ A lightweight widget that loads the Longswipe Widget script and provides a simpl
 
 ```dart
 import 'package:flutter/material.dart';
-import 'package:longswipe_flutter/longswipe_flutter.dart';
+import 'package:longswipe/longswipe.dart';
 
 class PaymentScreen extends StatelessWidget {
   @override
