@@ -1,7 +1,14 @@
 name: longswipe
 description: A Flutter package for integrating the Longswipe Widget into your application. Provides both a widget-based approach and a controller-based approach for maximum flexibility.
-version: 1.0.1
+version: 1.0.2
 homepage: https://github.com/Telktia-LTD/longswipe-dart-sdk
+documentation: https://developer.longswipe.com/docs
+topics:
+  - voucher
+  - protocol
+  - crypto-payment
+  - remittance-in-crypto
+  - exchange-crypto-for-fiat
 
 environment:
   sdk: '>=2.19.0 <4.0.0'
@@ -19,5 +26,3 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^2.0.0
 
-flutter:
-  # No assets or fonts needed for now
