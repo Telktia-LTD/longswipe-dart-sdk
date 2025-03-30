@@ -6,7 +6,7 @@ A Flutter SDK for integrating the Longswipe Widget into your application. Provid
 
 ```yaml
 dependencies:
-  longswipe: ^1.0.2
+  longswipe: ^1.0.3
 ```
 
 ## Integration Options
@@ -222,7 +222,7 @@ Add the following to your `ios/Runner/Info.plist` file:
 It's recommended to request camera permissions at app startup:
 
 ```dart
-import 'package:permission_handler/permission_handler.dart';
+import 'package:longswipe/longswipe.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
