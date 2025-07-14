@@ -219,6 +219,11 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
           }
         },
         onNavigationRequest: (NavigationRequest request) {
+          // Handle deep links for Longswipe app
+          if (request.url.startsWith('longswipe://')) {
+            _handleDeepLink(request.url);
+            return NavigationDecision.prevent;
+          }
           return NavigationDecision.navigate;
         },
       ),
@@ -306,7 +311,20 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
     controller.loadHtmlString(_getHtmlContent(), baseUrl: 'https://longswipe.com');
     
     _webViewController = controller;
+  } 
+  
+   void _handleDeepLink(String url) {
+    debugPrint('Deep link intercepted: $url');
+    
+    // Handle the longswipe://appapprove deep link by opening the Longswipe app
+    // if (url.contains('longswipe://appapprove')) {
+    //   _openLongswipeApp();
+    // } else {
+    //   debugPrint('Unhandled deep link: $url');
+    // }
   }
+
+  
 
   Future<void> getPermissions() async {
     await initPermissions();
@@ -468,6 +486,10 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
       // Initialize the widget with required defaultCurrency and defaultAmount
       const connect = new LongswipeConnect({
         ...${optionsJson},
+        flutter: {
+          enableFlutterIntegration: true,
+          flutterChannelName: 'longswipe_channel'
+        },
         onSuccess: function(data) {
           console.log('Success:', data);
          window.onSuccessCallback.postMessage(JSON.stringify(data));
