@@ -317,12 +317,6 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
    void _handleDeepLink(String url) {
     debugPrint('Deep link intercepted: $url');
     _openLongswipeApp();
-    // Handle the longswipe://appapprove deep link by opening the Longswipe app
-    // if (url.startsWith('longswipe://')) {
-    //   _openLongswipeApp();
-    // } else {
-    //   debugPrint('Unhandled deep link: $url');
-    // }
   }
 
   Future<void> _openLongswipeApp() async {
