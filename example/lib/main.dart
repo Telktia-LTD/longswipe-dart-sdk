@@ -344,7 +344,7 @@ class _MyHomePageState extends State<MyHomePage> {
               // Dynamic Longswipe Widget (NGN)
               if (_isValidAmount)
                 LongswipeWidget(
-                  apiKey: 'your_private_key',
+                  apiKey: 'pk_live_HXBc_qDtvoQ6baD0KIWbqFMKt3QvT_GIjiuTT1qo4lA=',
                   referenceId: 'order_${DateTime.now().millisecondsSinceEpoch}',
                   onResponse: _handleLongswipeResponse,
                   defaultCurrency: Currency.NGN,
