@@ -192,7 +192,7 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
           // Set up a fallback timer to close the webview if JavaScript fails
           // This will ensure the webview is closed even if the JavaScript channel approach fails
           _closeTimeoutTimer?.cancel();
-          _closeTimeoutTimer = Timer(const Duration(seconds: 60), () {
+          _closeTimeoutTimer = Timer(const Duration(seconds: 600), () {
             if (!_isWebViewClosed && mounted) {
               debugPrint('Fallback timer triggered: closing webview');
               _isWebViewClosed = true;
