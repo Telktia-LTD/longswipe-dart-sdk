@@ -17,3 +17,7 @@
 * Improved JavaScript integration with named handlers
 * Better permission handling
 * Progress indicator during loading
+
+## 1.0.4
+* Update Package to accomodate different methods to receive funds
+* Now accomodates support for all Longswipe merchant features
