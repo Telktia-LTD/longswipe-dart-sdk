@@ -6,7 +6,7 @@ A Flutter SDK for integrating the Longswipe Widget into your application. Provid
 
 ```yaml
 dependencies:
-  longswipe: ^1.0.4
+  longswipe: ^1.0.6
 ```
 
 ## Integration Options
