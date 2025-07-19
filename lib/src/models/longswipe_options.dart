@@ -2,11 +2,10 @@ import 'response_types.dart';
 
 /// Supported currencies for Longswipe
 enum Currency {
-  USD,
   NGN,
-  GBP,
   USDT,
   USDC,
+  EURC,
 }
 
 enum Environment {

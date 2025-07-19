@@ -21,3 +21,6 @@
 ## 1.0.4
 * Update Package to accomodate different methods to receive funds
 * Now accomodates support for all Longswipe merchant features
+
+## 1.0.5
+* Update supported currencies in widget
