@@ -19,16 +19,25 @@ This SDK provides two ways to integrate the Longswipe Widget:
 ## LongswipeWidget
 
 A lightweight widget that loads the Longswipe Widget script and provides a simple interface with built-in UI for integrating the widget into your application.
+Users can pay with
+1. Vouchers
+2. Authorise directly using their Longswipe App
+3. Pay with a Wallet address
 
 ## Image samples
 <div align="center">
-  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1743254744/longswipe_package_images/screen1_fsrnrg.png" width="40%" />
-  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1743254744/longswipe_package_images/screen2_wst0ju.png" width="40%" />
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1752956472/sdk-images/screen3_vsnznh.png" width="40%" />
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1752956472/sdk-images/screen1_yjhdg0.png" width="40%" />
 </div>
 
 <div align="center">
-  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1743254744/longswipe_package_images/screen3_r75knu.png" width="40%" />
-  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1743254745/longswipe_package_images/screen5_rvnlbd.png" width="40%" />
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1752956472/sdk-images/screen2_ftaivd.png" width="40%" />
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1752956472/sdk-images/screen5_cfmksm.png" width="40%" />
+</div>
+
+<div align="center">
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1752956472/sdk-images/screen7_elq2ln.png" width="40%" />
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1752956472/sdk-images/screen4_kfzl7m.png" width="40%" />
 </div>
 
 ```dart
@@ -234,14 +243,64 @@ void main() async {
 }
 ```
 
+## External App Integration
+
+The Longswipe SDK includes functionality to launch external applications (such as the Longswipe mobile app) when handling deep links. This requires additional platform-specific configuration.
+
+### Android Configuration
+
+To enable the SDK to query and launch external apps on Android, you need to add the following to your `android/app/src/main/AndroidManifest.xml` file:
+
+1. **Add queries section** (above the `<application>` tag):
+
+```xml
+<queries>
+    <!-- Add the Longswipe app package for external app launcher -->
+    <package android:name="com.telktia.longswipe" />
+    <!-- Other existing queries... -->
+    <intent>
+        <action android:name="android.intent.action.PROCESS_TEXT"/>
+        <data android:mimeType="text/plain"/>
+    </intent>
+</queries>
+```
+
+**Note**: Replace `com.longswipe.app` with the actual package name of the Longswipe mobile app when it becomes available.
+
+### iOS Configuration
+
+To enable the SDK to query and launch external apps on iOS, you need to add the following to your `ios/Runner/Info.plist` file:
+
+1. **Add URL scheme queries** (inside the `<dict>` tag):
+
+```xml
+<key>LSApplicationQueriesSchemes</key>
+<array>
+    <string>longswipe</string>
+</array>
+```
+
+### Why These Configurations Are Needed
+
+- **Android**: Starting from Android 11 (API level 30), apps need to explicitly declare which packages they intend to query or interact with for security reasons.
+- **iOS**: Apps must declare URL schemes they want to query in the `LSApplicationQueriesSchemes` to check if other apps are installed.
+
+These configurations allow the Longswipe SDK to:
+- Check if the Longswipe mobile app is installed on the device
+- Launch the Longswipe app when handling deep links
+- Redirect users to the appropriate app store if the app is not installed
+
 ## Implementation Details
 
 This package uses:
 
-- **flutter_inappwebview**: For embedding a WebView with JavaScript integration
+- **webview_flutter**: For embedding a WebView with JavaScript integration
 - **permission_handler**: For handling camera permissions
+- **external_app_launcher**: For launching external applications and deep link handling
 
 The implementation loads the Longswipe JavaScript widget in a WebView and communicates with it using JavaScript channels. When the user opens the payment modal, a new screen is presented with the WebView that handles the payment process.
+
+The SDK also includes deep link handling functionality that can launch external applications (such as the official Longswipe mobile app) when appropriate deep links are intercepted.
 
 ## Development
 

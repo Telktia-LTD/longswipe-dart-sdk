@@ -6,6 +6,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:external_app_launcher/external_app_launcher.dart';
 import '../constants.dart';
 import '../models/longswipe_options.dart';
 import '../models/response_types.dart';
@@ -192,7 +193,7 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
           // Set up a fallback timer to close the webview if JavaScript fails
           // This will ensure the webview is closed even if the JavaScript channel approach fails
           _closeTimeoutTimer?.cancel();
-          _closeTimeoutTimer = Timer(const Duration(seconds: 60), () {
+          _closeTimeoutTimer = Timer(const Duration(seconds: 600), () {
             if (!_isWebViewClosed && mounted) {
               debugPrint('Fallback timer triggered: closing webview');
               _isWebViewClosed = true;
@@ -219,6 +220,11 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
           }
         },
         onNavigationRequest: (NavigationRequest request) {
+          // Handle deep links for Longswipe app
+          if (request.url.startsWith('longswipe://')) {
+            _handleDeepLink(request.url);
+            return NavigationDecision.prevent;
+          }
           return NavigationDecision.navigate;
         },
       ),
@@ -306,7 +312,47 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
     controller.loadHtmlString(_getHtmlContent(), baseUrl: 'https://longswipe.com');
     
     _webViewController = controller;
+  } 
+  
+   void _handleDeepLink(String url) {
+    debugPrint('Deep link intercepted: $url');
+    _openLongswipeApp();
   }
+
+  Future<void> _openLongswipeApp() async {
+    try {
+      // Check if the Longswipe app is installed
+      final isInstalled = await LaunchApp.isAppInstalled(
+        androidPackageName: 'com.telktia.longswipe', // Replace with actual Android package name
+        iosUrlScheme: 'longswipe://', // iOS URL scheme
+      );
+
+      if (isInstalled == true) {
+        // Launch the Longswipe app
+        await LaunchApp.openApp(
+          androidPackageName: 'com.telktia.longswipe', // Replace with actual Android package name
+          iosUrlScheme: 'longswipe://', // iOS URL scheme
+          appStoreLink: 'https://apps.apple.com/app/longswipe/id6742020592', // Replace with actual App Store link
+          openStore: false, // Don't open store if app is already installed
+        );
+        // debugPrint('Successfully launched Longswipe app');
+      } else {
+        // App is not installed, optionally redirect to store
+        await LaunchApp.openApp(
+          androidPackageName: 'com.telktia.longswipe', // Replace with actual Android package name
+          iosUrlScheme: 'longswipe://', // iOS URL scheme
+          appStoreLink: 'https://apps.apple.com/app/longswipe/id6742020592', // Replace with actual App Store link
+          openStore: true, // Open store to install the app
+        );
+       // debugPrint('Longswipe app not installed, redirecting to store');
+      }
+    } catch (e) {
+      debugPrint('Error launching Longswipe app: $e');
+      widget.error('Failed to launch Longswipe app: $e');
+    }
+  }
+
+  
 
   Future<void> getPermissions() async {
     await initPermissions();
@@ -468,6 +514,10 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
       // Initialize the widget with required defaultCurrency and defaultAmount
       const connect = new LongswipeConnect({
         ...${optionsJson},
+        flutter: {
+          enableFlutterIntegration: true,
+          flutterChannelName: 'longswipe_channel'
+        },
         onSuccess: function(data) {
           console.log('Success:', data);
          window.onSuccessCallback.postMessage(JSON.stringify(data));
