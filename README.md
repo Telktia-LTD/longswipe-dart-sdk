@@ -19,16 +19,25 @@ This SDK provides two ways to integrate the Longswipe Widget:
 ## LongswipeWidget
 
 A lightweight widget that loads the Longswipe Widget script and provides a simple interface with built-in UI for integrating the widget into your application.
+Users can pay with
+1. Vouchers
+2. Authorise directly using their Longswipe App
+3. Pay with a Wallet address
 
 ## Image samples
 <div align="center">
-  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1743254744/longswipe_package_images/screen1_fsrnrg.png" width="40%" />
-  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1743254744/longswipe_package_images/screen2_wst0ju.png" width="40%" />
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1752956472/sdk-images/screen3_vsnznh.png" width="40%" />
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1752956472/sdk-images/screen1_yjhdg0.png" width="40%" />
 </div>
 
 <div align="center">
-  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1743254744/longswipe_package_images/screen3_r75knu.png" width="40%" />
-  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1743254745/longswipe_package_images/screen5_rvnlbd.png" width="40%" />
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1752956472/sdk-images/screen2_ftaivd.png" width="40%" />
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1752956472/sdk-images/screen5_cfmksm.png" width="40%" />
+</div>
+
+<div align="center">
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1752956472/sdk-images/screen7_elq2ln.png" width="40%" />
+  <img src="https://res.cloudinary.com/dm9s6bfd1/image/upload/v1752956472/sdk-images/screen4_kfzl7m.png" width="40%" />
 </div>
 
 ```dart
