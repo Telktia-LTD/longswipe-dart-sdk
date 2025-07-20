@@ -7,36 +7,36 @@ import '../models/response_types.dart';
 class LongswipeWidget extends StatefulWidget {
   /// Your Longswipe API key
   final String apiKey;
-  
+
   /// Unique identifier for the transaction
   final String referenceId;
 
   final Environment? environment;
-  
+
   /// Callback function for widget events
-  final void Function(ResType type, dynamic data) onResponse;
-  
+  final void Function(ResponseType type, dynamic data) onResponse;
+
   /// Default currency for redemption
   final Currency? defaultCurrency;
-  
+
   /// Default amount for redemption
   final double? defaultAmount;
-  
+
   /// Additional configuration options
   final Map<String, dynamic>? config;
-  
+
   /// Metadata to pass to the widget
   final Map<String, dynamic>? metaData;
-  
+
   /// Optional child widget as the trigger
   final Widget? child;
-  
+
   /// Optional custom text for the default button
   final String? buttonText;
-  
+
   /// Optional button style
   final ButtonStyle? buttonStyle;
-  
+
   /// Constructor
   const LongswipeWidget({
     Key? key,

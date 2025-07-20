@@ -1,52 +1,52 @@
 /// Types of responses that can be received from the Longswipe widget
-enum ResType {
+enum ResponseType {
   /// Widget operation completed successfully
   success,
-  
+
   /// An error occurred during widget operation
   error,
-  
+
   /// Widget was closed by the user
   close,
-  
+
   /// Widget has started and is ready
   start,
-  
+
   /// Widget is loading
   loading,
 }
 
 /// Extension on ResType to convert to and from strings
-extension ResTypeExtension on ResType {
+extension ResTypeExtension on ResponseType {
   /// Convert ResType to string
   String toValue() {
     switch (this) {
-      case ResType.success:
+      case ResponseType.success:
         return 'success';
-      case ResType.error:
+      case ResponseType.error:
         return 'error';
-      case ResType.close:
+      case ResponseType.close:
         return 'close';
-      case ResType.start:
+      case ResponseType.start:
         return 'start';
-      case ResType.loading:
+      case ResponseType.loading:
         return 'loading';
     }
   }
-  
+
   /// Convert string to ResType
-  static ResType fromValue(String value) {
+  static ResponseType fromValue(String value) {
     switch (value) {
       case 'success':
-        return ResType.success;
+        return ResponseType.success;
       case 'error':
-        return ResType.error;
+        return ResponseType.error;
       case 'close':
-        return ResType.close;
+        return ResponseType.close;
       case 'start':
-        return ResType.start;
+        return ResponseType.start;
       case 'loading':
-        return ResType.loading;
+        return ResponseType.loading;
       default:
         throw ArgumentError('Invalid ResType value: $value');
     }

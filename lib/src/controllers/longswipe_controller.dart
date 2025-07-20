@@ -15,10 +15,10 @@ import '../models/response_types.dart';
 class LongswipeController {
   /// Options for the Longswipe widget
   final LongswipeControllerOptions options;
-  
+
   /// Whether the Longswipe script has been loaded
   bool _isLoaded = false;
-  
+
   /// Whether the Longswipe script is currently loading
   bool _isLoading = false;
 
@@ -26,28 +26,29 @@ class LongswipeController {
   LongswipeController({
     required this.options,
   });
-  
+
   /// Check and request camera permission
   /// Returns true if permission is granted, false otherwise
   Future<bool> requestCameraPermission() async {
     final status = await Permission.camera.status;
-    
+
     if (status.isGranted) {
       return true;
     }
-    
+
     final result = await Permission.camera.request();
-    
+
     if (result.isPermanentlyDenied) {
       openAppSettings();
     }
-    
+
     return result.isGranted;
   }
 
   /// Open the Longswipe modal
   /// If [checkCameraPermission] is true, camera permission will be requested before opening the modal
-  Future<void> open(BuildContext context, {
+  Future<void> open(
+    BuildContext context, {
     Function(dynamic result)? onSuccess,
     Function(dynamic close)? onClose,
     Function(dynamic error)? onError,
@@ -89,14 +90,14 @@ class LongswipeController {
 
   /// Whether the Longswipe script is currently loading
   bool get isLoading => _isLoading;
-  
+
   /// Alias for open method to maintain backward compatibility
   Future<void> openModal(BuildContext context) async {
     return open(
       context,
-      onSuccess: (result) => options.onResponse(ResType.success, result),
-      onClose: (close) => options.onResponse(ResType.close, null),
-      onError: (error) => options.onResponse(ResType.error, error),
+      onSuccess: (result) => options.onResponse(ResponseType.success, result),
+      onClose: (close) => options.onResponse(ResponseType.close, null),
+      onError: (error) => options.onResponse(ResponseType.error, error),
     );
   }
 }
@@ -105,7 +106,7 @@ class LongswipeController {
 class LongswipeWebView extends StatefulWidget {
   /// Options for the Longswipe widget
   final LongswipeControllerOptions options;
-  
+
   /// Callback functions
   final Function(dynamic) success;
   final Function(dynamic) error;
@@ -132,38 +133,38 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
   late WebViewController _webViewController;
   bool isGranted = false;
   double progress = 0;
-  
+
   // Timer for auto-closing the webview if JavaScript fails
   Timer? _closeTimeoutTimer;
   bool _isWebViewClosed = false;
-  
+
   @override
   void initState() {
     super.initState();
     getPermissions();
-    
+
     // Initialize WebView controller
     _initWebViewController();
   }
-  
+
   @override
   void dispose() {
     _closeTimeoutTimer?.cancel();
     super.dispose();
   }
-  
+
   void _initWebViewController() {
     // Create a WebViewController with initial settings
     final WebViewController controller = WebViewController(
       onPermissionRequest: (request) => request.grant(),
     );
-    
+
     // Configure JavaScript mode
     controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-    
+
     // Set background color
     controller.setBackgroundColor(const Color(0x00000000));
-    
+
     // Configure navigation delegate
     controller.setNavigationDelegate(
       NavigationDelegate(
@@ -189,7 +190,7 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
               window.consoleLog.postMessage('Permissions API not supported');
             }
           ''');
-          
+
           // Set up a fallback timer to close the webview if JavaScript fails
           // This will ensure the webview is closed even if the JavaScript channel approach fails
           _closeTimeoutTimer?.cancel();
@@ -205,18 +206,18 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
         onWebResourceError: (WebResourceError error) {
           // Log the error
           debugPrint('WebView error: ${error.description}');
-          
+
           // For critical errors, close the webview
           if (error.errorCode >= 400) {
             if (!_isWebViewClosed && mounted) {
               _isWebViewClosed = true;
               _closeTimeoutTimer?.cancel();
-              widget.error("WebView error: ${error.description}");
+              widget.error('WebView error: ${error.description}');
               Navigator.pop(context);
             }
           } else {
             // For non-critical errors, just report them
-            widget.error("WebView error: ${error.description}");
+            widget.error('WebView error: ${error.description}');
           }
         },
         onNavigationRequest: (NavigationRequest request) {
@@ -229,7 +230,7 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
         },
       ),
     );
-    
+
     // Enable JavaScript access to camera
     if (Platform.isAndroid) {
       controller.runJavaScript('''
@@ -243,7 +244,7 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
           });
       ''');
     }
-    
+
     // Set up JavaScript channels for communication first
     controller.addJavaScriptChannel(
       'onSuccessCallback',
@@ -251,14 +252,14 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
         widget.success(jsonDecode(message.message));
       },
     );
-    
+
     controller.addJavaScriptChannel(
       'onErrorCallback',
       onMessageReceived: (JavaScriptMessage message) {
         widget.error(message.message);
       },
     );
-    
+
     controller.addJavaScriptChannel(
       'onCloseCallback',
       onMessageReceived: (JavaScriptMessage message) {
@@ -270,31 +271,31 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
         }
       },
     );
-    
+
     controller.addJavaScriptChannel(
       'onStartCallback',
       onMessageReceived: (JavaScriptMessage message) {
         widget.success(null); // Notify that the script is loaded
       },
     );
-    
+
     controller.addJavaScriptChannel(
       'onCrashCallback',
       onMessageReceived: (JavaScriptMessage message) {
         if (!_isWebViewClosed) {
           _isWebViewClosed = true;
           _closeTimeoutTimer?.cancel(); // Cancel the fallback timer
-          widget.error("WebView crashed or encountered a critical error");
+          widget.error('WebView crashed or encountered a critical error');
           Navigator.pop(context);
         }
       },
     );
-    
+
     controller.addJavaScriptChannel(
       'consoleLog',
       onMessageReceived: (JavaScriptMessage message) {
         debugPrint('Console: ${message.message}');
-        
+
         // Check if this is a fallback close message
         if (message.message.contains('Failed to close webview')) {
           if (!_isWebViewClosed && mounted) {
@@ -307,14 +308,15 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
         }
       },
     );
-    
+
     // Load HTML content after setting up channels
-    controller.loadHtmlString(_getHtmlContent(), baseUrl: 'https://longswipe.com');
-    
+    controller.loadHtmlString(_getHtmlContent(),
+        baseUrl: 'https://longswipe.com');
+
     _webViewController = controller;
-  } 
-  
-   void _handleDeepLink(String url) {
+  }
+
+  void _handleDeepLink(String url) {
     debugPrint('Deep link intercepted: $url');
     _openLongswipeApp();
   }
@@ -323,36 +325,39 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
     try {
       // Check if the Longswipe app is installed
       final isInstalled = await LaunchApp.isAppInstalled(
-        androidPackageName: 'com.telktia.longswipe', // Replace with actual Android package name
+        androidPackageName:
+            'com.telktia.longswipe', // Replace with actual Android package name
         iosUrlScheme: 'longswipe://', // iOS URL scheme
       );
 
       if (isInstalled == true) {
         // Launch the Longswipe app
         await LaunchApp.openApp(
-          androidPackageName: 'com.telktia.longswipe', // Replace with actual Android package name
+          androidPackageName:
+              'com.telktia.longswipe', // Replace with actual Android package name
           iosUrlScheme: 'longswipe://', // iOS URL scheme
-          appStoreLink: 'https://apps.apple.com/app/longswipe/id6742020592', // Replace with actual App Store link
+          appStoreLink:
+              'https://apps.apple.com/app/longswipe/id6742020592', // Replace with actual App Store link
           openStore: false, // Don't open store if app is already installed
         );
         // debugPrint('Successfully launched Longswipe app');
       } else {
         // App is not installed, optionally redirect to store
         await LaunchApp.openApp(
-          androidPackageName: 'com.telktia.longswipe', // Replace with actual Android package name
+          androidPackageName:
+              'com.telktia.longswipe', // Replace with actual Android package name
           iosUrlScheme: 'longswipe://', // iOS URL scheme
-          appStoreLink: 'https://apps.apple.com/app/longswipe/id6742020592', // Replace with actual App Store link
+          appStoreLink:
+              'https://apps.apple.com/app/longswipe/id6742020592', // Replace with actual App Store link
           openStore: true, // Open store to install the app
         );
-       // debugPrint('Longswipe app not installed, redirecting to store');
+        // debugPrint('Longswipe app not installed, redirecting to store');
       }
     } catch (e) {
       debugPrint('Error launching Longswipe app: $e');
       widget.error('Failed to launch Longswipe app: $e');
     }
   }
-
-  
 
   Future<void> getPermissions() async {
     await initPermissions();
@@ -491,7 +496,7 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
             <div id="longswipe-container"></div>
           </div>
           
-          <script src="${DEFAULT_URI}"></script>
+          <script src="$defaultUri"></script>
           <script>
              document.addEventListener('DOMContentLoaded', function() {
       // Check for camera permissions
@@ -513,7 +518,7 @@ class _LongswipeWebViewState extends State<LongswipeWebView> {
       
       // Initialize the widget with required defaultCurrency and defaultAmount
       const connect = new LongswipeConnect({
-        ...${optionsJson},
+        ...$optionsJson,
         flutter: {
           enableFlutterIntegration: true,
           flutterChannelName: 'longswipe_channel'

@@ -27,20 +27,21 @@ extension EnvironmentExtension on Environment {
 class LongswipeOptions {
   /// Your Longswipe API key
   final String apiKey;
-  
+
   final Environment? environment;
+
   /// Unique identifier for the transaction
   final String referenceId;
-  
+
   /// Default currency for redemption
   final Currency? defaultCurrency;
-  
+
   /// Default amount for redemption
   final double? defaultAmount;
-  
+
   /// Additional configuration options
   final Map<String, dynamic>? config;
-  
+
   /// Metadata to pass to the widget
   final Map<String, dynamic>? metaData;
 
@@ -61,7 +62,8 @@ class LongswipeOptions {
       'apiKey': apiKey,
       'referenceId': referenceId,
       'environment': environment!.toValue(),
-      if (defaultCurrency != null) 'defaultCurrency': defaultCurrency!.toValue(),
+      if (defaultCurrency != null)
+        'defaultCurrency': defaultCurrency!.toValue(),
       if (defaultAmount != null) 'defaultAmount': defaultAmount,
       if (config != null) 'config': config,
       if (metaData != null) 'metaData': metaData,
@@ -72,7 +74,7 @@ class LongswipeOptions {
 /// Options for the Longswipe controller
 class LongswipeControllerOptions extends LongswipeOptions {
   /// Callback function for widget events
-  final void Function(ResType type, dynamic data) onResponse;
+  final void Function(ResponseType type, dynamic data) onResponse;
 
   /// Constructor
   LongswipeControllerOptions({
@@ -90,8 +92,8 @@ class LongswipeControllerOptions extends LongswipeOptions {
 /// Response from the Longswipe widget
 class LongswipeResponse {
   /// The type of response
-  final ResType type;
-  
+  final ResponseType type;
+
   /// The data associated with the response (if any)
   final dynamic data;
 

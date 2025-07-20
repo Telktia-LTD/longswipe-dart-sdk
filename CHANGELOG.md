@@ -27,3 +27,8 @@
 
 ## 1.0.6
 * Fix minor error
+
+## 1.0.7
+* Formatted code
+* Enhance error handling
+* 

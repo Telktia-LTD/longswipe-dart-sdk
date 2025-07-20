@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:longswipe/longswipe.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'dart:io' show Platform;
 
 void main() async {
@@ -14,9 +13,7 @@ void main() async {
 
 Future<void> _requestPermissions() async {
   // List of permissions needed for the app
-  List<Permission> permissions = [
-    Permission.camera,
-  ];
+  List<Permission> permissions = [Permission.camera];
 
   // Add platform-specific permissions
   if (Platform.isIOS) {
@@ -36,7 +33,9 @@ Future<void> _requestPermissions() async {
 
       // If permission is permanently denied, show a dialog
       if (status.isPermanentlyDenied) {
-        debugPrint('${permission.toString()} is permanently denied. Please enable it in app settings.');
+        debugPrint(
+          '${permission.toString()} is permanently denied. Please enable it in app settings.',
+        );
       }
     }
   }
@@ -47,9 +46,7 @@ Future<Map<Permission, PermissionStatus>> checkPermissions() async {
   Map<Permission, PermissionStatus> statuses = {};
 
   // List of permissions needed for the app
-  List<Permission> permissions = [
-    Permission.camera,
-  ];
+  List<Permission> permissions = [Permission.camera];
 
   // Add platform-specific permissions
   if (Platform.isIOS) {
@@ -131,22 +128,22 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   // Handle responses from the Longswipe widget
-  void _handleLongswipeResponse(ResType type, dynamic data) {
+  void _handleLongswipeResponse(ResponseType type, dynamic data) {
     setState(() {
       switch (type) {
-        case ResType.success:
+        case ResponseType.success:
           _responseMessageSuccess = 'Payment successful: ${data ?? 'No data'}';
           break;
-        case ResType.error:
+        case ResponseType.error:
           _responseMessage = 'Error: ${data ?? 'Unknown error'}';
           break;
-        case ResType.close:
+        case ResponseType.close:
           _responseMessage = 'Widget closed by user';
           break;
-        case ResType.start:
+        case ResponseType.start:
           _responseMessage = 'Widget started';
           break;
-        case ResType.loading:
+        case ResponseType.loading:
           _responseMessage = 'Widget loading...';
           break;
       }
@@ -209,16 +206,25 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding: const EdgeInsets.all(12),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: _responseMessage.contains('Error') ? Colors.red[50] : Colors.blue[50],
+                    color:
+                        _responseMessage.contains('Error')
+                            ? Colors.red[50]
+                            : Colors.blue[50],
                     border: Border.all(
-                        color: _responseMessage.contains('Error') ? Colors.red : Colors.blue
+                      color:
+                          _responseMessage.contains('Error')
+                              ? Colors.red
+                              : Colors.blue,
                     ),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     _responseMessage,
                     style: TextStyle(
-                      color: _responseMessage.contains('Error') ? Colors.red : Colors.blue,
+                      color:
+                          _responseMessage.contains('Error')
+                              ? Colors.red
+                              : Colors.blue,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
@@ -235,27 +241,34 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: [
                       Text(
                         'Payment Amount',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 16),
 
                       // Amount Input Field
                       TextFormField(
                         controller: _amountController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d{0,2}'),
+                          ),
                         ],
                         decoration: InputDecoration(
                           labelText: 'Amount ',
                           prefixText: ' ',
                           border: const OutlineInputBorder(),
                           hintText: 'Enter amount to pay',
-                          suffixIcon: _isValidAmount
-                              ? const Icon(Icons.check_circle, color: Colors.green)
-                              : null,
+                          suffixIcon:
+                              _isValidAmount
+                                  ? const Icon(
+                                    Icons.check_circle,
+                                    color: Colors.green,
+                                  )
+                                  : null,
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -287,23 +300,26 @@ class _MyHomePageState extends State<MyHomePage> {
                       const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,
-                        children: [1000, 5000, 10000, 20000, 50000].map((amount) {
-                          return ElevatedButton(
-                            onPressed: () {
-                              _amountController.text = amount.toString();
-                              _validateAndUpdateAmount(amount.toString());
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _paymentAmount == amount
-                                  ? Colors.deepPurple
-                                  : Colors.grey[300],
-                              foregroundColor: _paymentAmount == amount
-                                  ? Colors.white
-                                  : Colors.black87,
-                            ),
-                            child: Text('${amount.toString()}'),
-                          );
-                        }).toList(),
+                        children:
+                            [1000, 5000, 10000, 20000, 50000].map((amount) {
+                              return ElevatedButton(
+                                onPressed: () {
+                                  _amountController.text = amount.toString();
+                                  _validateAndUpdateAmount(amount.toString());
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      _paymentAmount == amount
+                                          ? Colors.deepPurple
+                                          : Colors.grey[300],
+                                  foregroundColor:
+                                      _paymentAmount == amount
+                                          ? Colors.white
+                                          : Colors.black87,
+                                ),
+                                child: Text('${amount.toString()}'),
+                              );
+                            }).toList(),
                       ),
 
                       const SizedBox(height: 16),
@@ -351,10 +367,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   environment: Environment.production,
                   defaultAmount: _paymentAmount,
                   metaData: const {
-                    'userid':'343',
-                    'useremail':'O5N3S@example.com'
+                    'userid': '343',
+                    'useremail': 'O5N3S@example.com',
                   },
-                  buttonText: 'Pay ${_paymentAmount.toStringAsFixed(2)} with Longswipe',
+                  buttonText:
+                      'Pay ${_paymentAmount.toStringAsFixed(2)} with Longswipe',
                 )
               else
                 Container(
@@ -367,10 +384,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: Text(
                     'Enter a valid amount to continue',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 16),
                   ),
                 ),
 
@@ -383,10 +397,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
               const Text(
                 'Fixed Amount Examples:',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
 
               const SizedBox(height: 20),
@@ -406,9 +417,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   environment: Environment.sandbox,
                   defaultAmount: 100,
                   metaData: const {
-                    'userid':'343',
-                    'useremail':'O5N3S@example.com',
-                    'source':'flutter-sdk-custom-button',
+                    'userid': '343',
+                    'useremail': 'O5N3S@example.com',
+                    'source': 'flutter-sdk-custom-button',
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -420,7 +431,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       borderRadius: BorderRadius.circular(4),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.green.withValues(red: 0, green: 255, blue: 0, alpha: 0.3),
+                          color: Colors.green.withValues(
+                            red: 0,
+                            green: 255,
+                            blue: 0,
+                            alpha: 0.3,
+                          ),
                           spreadRadius: 1,
                           blurRadius: 4,
                           offset: const Offset(0, 2),

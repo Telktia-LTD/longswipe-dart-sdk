@@ -1,4 +1,5 @@
 library longswipe;
+
 export 'src/widgets/longswipe_widget.dart';
 export 'src/controllers/longswipe_controller.dart';
 export 'src/models/longswipe_options.dart';
